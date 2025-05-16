@@ -1,0 +1,426 @@
+/* 基本样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Serif SC', serif;
+    background-color: #fff5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h1, h2, h3 {
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #e75480;
+}
+
+h1 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 3.5rem;
+    text-align: center;
+    margin-top: 10px;
+}
+
+h2 {
+    font-size: 2rem;
+    text-align: center;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(to right, #ffb6c1, #e75480, #ffb6c1);
+}
+
+section {
+    margin: 60px 0;
+    padding: 30px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+}
+
+section:hover {
+    transform: translateY(-5px);
+}
+
+/* 头部样式 */
+header {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #fff5f5, #ffe0e0);
+    border-radius: 15px;
+    margin-bottom: 40px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.date-counter {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #e75480;
+    margin-top: 20px;
+    padding: 10px;
+    display: inline-block;
+    border: 2px dashed #ffb6c1;
+    border-radius: 10px;
+}
+
+#days-together {
+    font-size: 1.5rem;
+    color: #e75480;
+    font-weight: bold;
+}
+
+/* 心形动画 */
+.heart-container {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto 20px;
+}
+
+.heart {
+    background-color: #e75480;
+    display: inline-block;
+    height: 30px;
+    margin: 0 10px;
+    position: relative;
+    top: 0;
+    transform: rotate(-45deg);
+    width: 30px;
+    animation: heartbeat 1.5s infinite;
+}
+
+.heart:before,
+.heart:after {
+    content: "";
+    background-color: #e75480;
+    border-radius: 50%;
+    height: 30px;
+    position: absolute;
+    width: 30px;
+}
+
+.heart:before {
+    top: -15px;
+    left: 0;
+}
+
+.heart:after {
+    left: 15px;
+    top: 0;
+}
+
+@keyframes heartbeat {
+    0% {
+        transform: rotate(-45deg) scale(1);
+    }
+    20% {
+        transform: rotate(-45deg) scale(1.3);
+    }
+    40% {
+        transform: rotate(-45deg) scale(1);
+    }
+    60% {
+        transform: rotate(-45deg) scale(1.3);
+    }
+    80% {
+        transform: rotate(-45deg) scale(1);
+    }
+    100% {
+        transform: rotate(-45deg) scale(1);
+    }
+}
+
+/* 照片画廊 */
+.gallery {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.photo-card {
+    width: 300px;
+    background-color: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.photo-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.photo {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+}
+
+.photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.photo-card:hover .photo img {
+    transform: scale(1.1);
+}
+
+.caption {
+    padding: 15px;
+    text-align: center;
+    font-size: 1rem;
+    color: #333;
+}
+
+.placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9f9f9;
+    color: #aaa;
+}
+
+.placeholder i {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+/* 我们的故事 */
+.story-content {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    position: relative;
+}
+
+.story-content p {
+    margin-bottom: 20px;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.story-content::before {
+    content: '"';
+    font-size: 5rem;
+    color: #ffb6c1;
+    opacity: 0.3;
+    position: absolute;
+    top: -20px;
+    left: 10px;
+    font-family: Georgia, serif;
+}
+
+/* 特别的时刻 */
+.moments-container {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.moment {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: all 0.3s ease;
+    border-left: 5px solid #e75480;
+}
+
+.moment:hover {
+    transform: translateX(10px);
+}
+
+.moment-date {
+    color: #e75480;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.moment-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.moment-description {
+    color: #666;
+}
+
+/* 页脚 */
+footer {
+    text-align: center;
+    padding: 30px 0;
+    margin-top: 50px;
+    color: #666;
+    border-top: 1px solid #eee;
+}
+
+footer p {
+    margin: 10px 0;
+}
+
+.copyright {
+    font-size: 0.9rem;
+}
+
+/* 音乐播放器样式 */
+.music-player {
+    position: fixed;
+    bottom: -100px; /* 隐藏在屏幕外 */
+    right: 20px;
+    z-index: -1; /* 降低z-index使其不可见 */
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0);
+    padding: 10px;
+    border-radius: 30px;
+    opacity: 0; /* 完全透明 */
+    pointer-events: none; /* 不接收鼠标事件 */
+    transition: all 0.3s ease;
+}
+
+.music-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background: #e75480;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    outline: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.music-toggle:hover {
+    background: #ff6b99;
+    transform: scale(1.1);
+}
+
+.music-toggle i {
+    font-size: 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.music-toggle.playing i {
+    animation: spin 4s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.music-info {
+    margin-left: 10px;
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.music-player:hover .music-info {
+    opacity: 1;
+    width: 100px;
+}
+
+.music-name {
+    color: #e75480;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+    
+    h2 {
+        font-size: 1.8rem;
+    }
+    
+    .gallery {
+        gap: 15px;
+    }
+    
+    .photo-card {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    section {
+        padding: 20px;
+        margin: 40px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 2rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    .subtitle {
+        font-size: 1rem;
+    }
+    
+    .date-counter {
+        font-size: 0.9rem;
+    }
+    
+    #days-together {
+        font-size: 1.2rem;
+    }
+    
+    .story-content p {
+        font-size: 1rem;
+    }
+}

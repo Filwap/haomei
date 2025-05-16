@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我们的爱情故事</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 音乐播放器 -->
+    <div class="music-player">
+        <audio id="bgMusic" loop>
+            <source src="https://music.163.com/song/media/outer/url?id=1824020873.mp3" type="audio/mpeg">
+            您的浏览器不支持音频播放。
+        </audio>
+        <button id="musicToggle" class="music-toggle">
+            <i class="fas fa-music"></i>
+        </button>
+        <div class="music-info">
+            <span class="music-name">背景音乐</span>
+        </div>
+    </div>
+    
+    <div class="container">
+        <header>
+            <div class="heart-container">
+                <div class="heart"></div>
+            </div>
+            <h1>我们的爱情故事</h1>
+            <p class="subtitle">每一天都是值得纪念的日子</p>
+            <div class="date-counter">
+                <p>我们在一起已经 <span id="days-together">0</span> 天</p>
+            </div>
+        </header>
+
+        <section class="photo-gallery">
+            <h2>美好瞬间</h2>
+            <div class="gallery">
+                <div class="photo-card">
+                    <div class="photo placeholder">
+                        <i class="fas fa-image"></i>
+                        <p>添加照片</p>
+                    </div>
+                    <div class="caption">我们的第一张合照</div>
+                </div>
+                <div class="photo-card">
+                    <div class="photo placeholder">
+                        <i class="fas fa-image"></i>
+                        <p>添加照片</p>
+                    </div>
+                    <div class="caption">第一次旅行</div>
+                </div>
+                <div class="photo-card">
+                    <div class="photo placeholder">
+                        <i class="fas fa-image"></i>
+                        <p>添加照片</p>
+                    </div>
+                    <div class="caption">特别的纪念日</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="our-story">
+            <h2>我们的故事</h2>
+            <div class="story-content">
+                <p>在这里讲述你们相遇、相知、相爱的故事...</p>
+                <p>可以描述你们是如何认识的，第一次约会的情景，或者其他特别的回忆。</p>
+                <p>每一段经历都是你们爱情长河中的珍贵记忆，值得被铭记和珍藏。</p>
+            </div>
+        </section>
+
+        <section class="special-moments">
+            <h2>特别的时刻</h2>
+            <div class="moments-container">
+                <div class="moment">
+                    <div class="moment-date">2023年1月1日</div>
+                    <div class="moment-title">我们的初次相遇</div>
+                    <div class="moment-description">在这里描述你们相遇的场景和感受...</div>
+                </div>
+                <div class="moment">
+                    <div class="moment-date">2023年2月14日</div>
+                    <div class="moment-title">第一个情人节</div>
+                    <div class="moment-description">在这里描述你们一起度过的第一个情人节...</div>
+                </div>
+                <div class="moment">
+                    <div class="moment-date">2023年5月20日</div>
+                    <div class="moment-title">520特别纪念</div>
+                    <div class="moment-description">在这里描述这个特别日子的回忆...</div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p>❤️ 用爱创造，用心珍藏 ❤️</p>
+            <p class="copyright">© <span id="current-year">2025</span> 我们的爱情纪念册</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
