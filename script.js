@@ -65,33 +65,54 @@ window.addEventListener('load', function() {
 });
 
 // 背景音乐控制
+let playAttempts = 0;
+const maxPlayAttempts = 5;
+
+function tryPlayMusic(bgMusic) {
+    bgMusic.muted = false;
+    const playPromise = bgMusic.play();
+    
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
+            console.log('背景音乐播放成功');
+        }).catch(error => {
+            console.log('播放尝试失败:', error);
+            if (playAttempts < maxPlayAttempts) {
+                playAttempts++;
+                setTimeout(() => tryPlayMusic(bgMusic), 500);
+            }
+        });
+    }
+}
+
 function playBackgroundMusic() {
     const bgMusic = document.getElementById('bgMusic');
     if (!bgMusic) return;
 
     // 微信浏览器特殊处理
     if (typeof WeixinJSBridge !== 'undefined') {
-        WeixinJSBridge.invoke('getNetworkType', {}, () => {
-            // WeixinJSBridge准备就绪后尝试播放
-            bgMusic.play().catch(error => {
-                console.log('微信自动播放失败，设置交互播放', error);
-                setupMusicPlayOnInteraction();
-            });
+        document.addEventListener('WeixinJSBridgeReady', () => {
+            tryPlayMusic(bgMusic);
         }, false);
-    } else {
-        // 非微信浏览器尝试自动播放
-        const playPromise = bgMusic.play();
         
-        if (playPromise !== undefined) {
-            playPromise.then(_ => {
-                console.log('背景音乐已自动播放');
-            }).catch(error => {
-                console.log('自动播放被阻止，需要用户交互', error);
-                setupMusicPlayOnInteraction();
-            });
-        }
+        // 额外尝试
+        WeixinJSBridge.invoke('getNetworkType', {}, () => {
+            tryPlayMusic(bgMusic);
+        }, false);
     }
+    
+    // 通用尝试
+    tryPlayMusic(bgMusic);
+    
+    // 页面点击事件处理
+    document.addEventListener('click', () => {
+        tryPlayMusic(bgMusic);
+    }, {once: true});
 }
+
+// 页面加载后立即尝试播放
+document.addEventListener('DOMContentLoaded', playBackgroundMusic);
+window.addEventListener('load', playBackgroundMusic);
 
 // 设置用户交互后播放音乐
 function setupMusicPlayOnInteraction() {
