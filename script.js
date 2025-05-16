@@ -75,6 +75,7 @@ function tryPlayMusic(bgMusic) {
     if (playPromise !== undefined) {
         playPromise.then(() => {
             console.log('背景音乐播放成功');
+            document.getElementById('musicControl').classList.add('playing');
         }).catch(error => {
             console.log('播放尝试失败:', error);
             if (playAttempts < maxPlayAttempts) {
@@ -82,6 +83,24 @@ function tryPlayMusic(bgMusic) {
                 setTimeout(() => tryPlayMusic(bgMusic), 500);
             }
         });
+    }
+}
+
+function toggleMusic() {
+    const bgMusic = document.getElementById('bgMusic');
+    const control = document.getElementById('musicControl');
+    
+    if (bgMusic.paused) {
+        bgMusic.muted = false;
+        bgMusic.play()
+            .then(() => control.classList.add('playing'))
+            .catch(error => {
+                console.log('播放失败:', error);
+                control.classList.remove('playing');
+            });
+    } else {
+        bgMusic.pause();
+        control.classList.remove('playing');
     }
 }
 
@@ -103,16 +122,29 @@ function playBackgroundMusic() {
     
     // 通用尝试
     tryPlayMusic(bgMusic);
-    
-    // 页面点击事件处理
-    document.addEventListener('click', () => {
-        tryPlayMusic(bgMusic);
-    }, {once: true});
 }
 
-// 页面加载后立即尝试播放
-document.addEventListener('DOMContentLoaded', playBackgroundMusic);
-window.addEventListener('load', playBackgroundMusic);
+// 初始化音乐控制
+function initMusicControl() {
+    const control = document.getElementById('musicControl');
+    if (control) {
+        control.addEventListener('click', toggleMusic);
+    }
+}
+
+// 页面加载后初始化
+document.addEventListener('DOMContentLoaded', () => {
+    playBackgroundMusic();
+    initMusicControl();
+});
+
+window.addEventListener('load', () => {
+    // 如果音乐还没播放，再尝试一次
+    const bgMusic = document.getElementById('bgMusic');
+    if (bgMusic && bgMusic.paused) {
+        tryPlayMusic(bgMusic);
+    }
+});
 
 // 设置用户交互后播放音乐
 function setupMusicPlayOnInteraction() {
