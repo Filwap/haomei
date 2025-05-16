@@ -67,22 +67,26 @@ window.addEventListener('load', function() {
 // 背景音乐控制
 function playBackgroundMusic() {
     const bgMusic = document.getElementById('bgMusic');
-    
-    // 尝试播放音乐
-    if (bgMusic) {
+    if (!bgMusic) return;
+
+    // 微信浏览器特殊处理
+    if (typeof WeixinJSBridge !== 'undefined') {
+        WeixinJSBridge.invoke('getNetworkType', {}, () => {
+            // WeixinJSBridge准备就绪后尝试播放
+            bgMusic.play().catch(error => {
+                console.log('微信自动播放失败，设置交互播放', error);
+                setupMusicPlayOnInteraction();
+            });
+        }, false);
+    } else {
+        // 非微信浏览器尝试自动播放
         const playPromise = bgMusic.play();
         
-        // 现代浏览器中，play()返回一个Promise
         if (playPromise !== undefined) {
             playPromise.then(_ => {
-                // 自动播放成功
                 console.log('背景音乐已自动播放');
-                document.getElementById('musicToggle').classList.add('playing');
-            })
-            .catch(error => {
-                // 自动播放被阻止
+            }).catch(error => {
                 console.log('自动播放被阻止，需要用户交互', error);
-                // 添加页面点击事件来播放音乐
                 setupMusicPlayOnInteraction();
             });
         }
