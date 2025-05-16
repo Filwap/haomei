@@ -68,16 +68,37 @@ window.addEventListener('load', function() {
 let playAttempts = 0;
 const maxPlayAttempts = 5;
 
+// 更新状态提示
+function updateStatus(message, isError = false) {
+    const statusEl = document.getElementById('audioStatus');
+    if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.style.display = 'block';
+        statusEl.style.backgroundColor = isError ? 'rgba(255,0,0,0.7)' : 'rgba(0,0,0,0.7)';
+        setTimeout(() => {
+            statusEl.style.display = 'none';
+        }, 3000);
+    }
+    console.log('[音乐状态]', message);
+}
+
 function tryPlayMusic(bgMusic) {
+    updateStatus('尝试播放音乐...');
     bgMusic.muted = false;
+    
+    // 确保音频已加载
+    if (bgMusic.readyState < 2) {
+        bgMusic.load();
+    }
+
     const playPromise = bgMusic.play();
     
     if (playPromise !== undefined) {
         playPromise.then(() => {
-            console.log('背景音乐播放成功');
+            updateStatus('背景音乐已开始播放');
             document.getElementById('musicControl').classList.add('playing');
         }).catch(error => {
-            console.log('播放尝试失败:', error);
+            updateStatus(`播放失败: ${error.message}`, true);
             if (playAttempts < maxPlayAttempts) {
                 playAttempts++;
                 setTimeout(() => tryPlayMusic(bgMusic), 500);
@@ -90,18 +111,53 @@ function toggleMusic() {
     const bgMusic = document.getElementById('bgMusic');
     const control = document.getElementById('musicControl');
     
+    if (!bgMusic) {
+        updateStatus('未找到音频元素', true);
+        return;
+    }
+    
     if (bgMusic.paused) {
+        updateStatus('尝试开始播放...');
         bgMusic.muted = false;
         bgMusic.play()
-            .then(() => control.classList.add('playing'))
+            .then(() => {
+                updateStatus('音乐已播放');
+                control.classList.add('playing');
+            })
             .catch(error => {
-                console.log('播放失败:', error);
+                updateStatus(`播放失败: ${error.message}`, true);
                 control.classList.remove('playing');
             });
     } else {
+        updateStatus('音乐已暂停');
         bgMusic.pause();
         control.classList.remove('playing');
     }
+}
+
+function initAudioEvents() {
+    const bgMusic = document.getElementById('bgMusic');
+    if (!bgMusic) {
+        updateStatus('未找到音频元素', true);
+        return;
+    }
+
+    // 音频事件监听
+    bgMusic.addEventListener('error', () => {
+        updateStatus('音频加载失败，请检查文件路径', true);
+    });
+
+    bgMusic.addEventListener('canplay', () => {
+        updateStatus('音频已准备好播放');
+    });
+
+    bgMusic.addEventListener('playing', () => {
+        updateStatus('音乐正在播放');
+    });
+
+    bgMusic.addEventListener('waiting', () => {
+        updateStatus('等待音频数据...');
+    });
 }
 
 function playBackgroundMusic() {
@@ -110,12 +166,14 @@ function playBackgroundMusic() {
 
     // 微信浏览器特殊处理
     if (typeof WeixinJSBridge !== 'undefined') {
+        updateStatus('检测到微信环境，尝试特殊处理...');
         document.addEventListener('WeixinJSBridgeReady', () => {
+            updateStatus('微信接口准备就绪');
             tryPlayMusic(bgMusic);
         }, false);
         
-        // 额外尝试
         WeixinJSBridge.invoke('getNetworkType', {}, () => {
+            updateStatus('微信网络检测完成');
             tryPlayMusic(bgMusic);
         }, false);
     }
@@ -134,17 +192,25 @@ function initMusicControl() {
 
 // 页面加载后初始化
 document.addEventListener('DOMContentLoaded', () => {
-    playBackgroundMusic();
+    initAudioEvents();
     initMusicControl();
+    playBackgroundMusic();
 });
 
 window.addEventListener('load', () => {
-    // 如果音乐还没播放，再尝试一次
     const bgMusic = document.getElementById('bgMusic');
     if (bgMusic && bgMusic.paused) {
         tryPlayMusic(bgMusic);
     }
 });
+
+// 全局点击事件作为后备
+document.addEventListener('click', () => {
+    const bgMusic = document.getElementById('bgMusic');
+    if (bgMusic && bgMusic.paused) {
+        tryPlayMusic(bgMusic);
+    }
+}, {once: true});
 
 // 设置用户交互后播放音乐
 function setupMusicPlayOnInteraction() {
