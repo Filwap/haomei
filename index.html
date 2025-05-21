@@ -3,96 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我们的爱情故事</title>
+    <title>小浩&小梅的爱情纪念</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- 欢迎弹窗 -->
+    <div class="modal-overlay" id="welcome-overlay"></div>
+    <div class="welcome-modal" id="welcome-modal">
+        <h2>欢迎来到小浩&小梅的纪念网站</h2>
+        <p>感谢您访问我们的爱情纪念网站，这里记录了我们美好的点点滴滴。</p>
+        <button id="close-welcome">我知道了</button>
+    </div>
+
     <!-- 背景音乐 -->
-    <audio id="bgMusic" loop muted preload="auto">
-        <source src="CMJ - 星星在唱歌（纯音乐）.mp3" type="audio/mpeg">
+    <audio id="bgMusic" loop>
+        <source src="music/background.mp3" type="audio/mpeg">
         您的浏览器不支持音频播放。
     </audio>
-    <!-- 音乐控制按钮 -->
-    <div id="musicControl" class="music-control">♪</div>
-    <!-- 音频加载状态提示 -->
-    <div id="audioStatus" style="display:none; position:fixed; bottom:10px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:5px 10px; border-radius:5px; z-index:1000;"></div>
     
-    <div class="container">
-        <header>
-            <div class="heart-container">
-                <div class="heart"></div>
-            </div>
-            <h1>我们的爱情故事</h1>
-            <p class="subtitle">每一天都是值得纪念的日子</p>
-            <div class="date-counter">
-                <p>我们在一起已经 <span id="days-together">0</span> 天</p>
-            </div>
-        </header>
-
-        <section class="photo-gallery">
-            <h2>美好瞬间</h2>
-            <div class="gallery">
-                <div class="photo-card">
-                    <div class="photo placeholder">
-                        <i class="fas fa-image"></i>
-                        <p>添加照片</p>
-                    </div>
-                    <div class="caption">我们的第一张合照</div>
-                </div>
-                <div class="photo-card">
-                    <div class="photo placeholder">
-                        <i class="fas fa-image"></i>
-                        <p>添加照片</p>
-                    </div>
-                    <div class="caption">第一次旅行</div>
-                </div>
-                <div class="photo-card">
-                    <div class="photo placeholder">
-                        <i class="fas fa-image"></i>
-                        <p>添加照片</p>
-                    </div>
-                    <div class="caption">特别的纪念日</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="our-story">
-            <h2>我们的故事</h2>
-            <div class="story-content">
-                <p>在这里讲述你们相遇、相知、相爱的故事...</p>
-                <p>可以描述你们是如何认识的，第一次约会的情景，或者其他特别的回忆。</p>
-                <p>每一段经历都是你们爱情长河中的珍贵记忆，值得被铭记和珍藏。</p>
-            </div>
-        </section>
-
-        <section class="special-moments">
-            <h2>特别的时刻</h2>
-            <div class="moments-container">
-                <div class="moment">
-                    <div class="moment-date">2023年1月1日</div>
-                    <div class="moment-title">我们的初次相遇</div>
-                    <div class="moment-description">在这里描述你们相遇的场景和感受...</div>
-                </div>
-                <div class="moment">
-                    <div class="moment-date">2023年2月14日</div>
-                    <div class="moment-title">第一个情人节</div>
-                    <div class="moment-description">在这里描述你们一起度过的第一个情人节...</div>
-                </div>
-                <div class="moment">
-                    <div class="moment-date">2023年5月20日</div>
-                    <div class="moment-title">520特别纪念</div>
-                    <div class="moment-description">在这里描述这个特别日子的回忆...</div>
-                </div>
-            </div>
-        </section>
-
-        <footer>
-            <p>❤️ 用爱创造，用心珍藏 ❤️</p>
-            <p class="copyright">© <span id="current-year">2025</span> 我们的爱情纪念册</p>
-        </footer>
+    <!-- 音乐控制按钮 -->
+    <div id="musicControl" class="music-control">
+        <i class="fas fa-music"></i>
     </div>
+
+    <header>
+        <div class="header-content">
+            <h1>我们的爱情纪念</h1>
+            <p class="subtitle">记录每一个美好瞬间</p>
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#home" class="active">首页</a></li>
+            <li><a href="#dates">纪念日</a></li>
+            <li><a href="#gallery">照片墙</a></li>
+            <li><a href="#messages">留言板</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- 首页部分 -->
+        <section id="home" class="section">
+            <div class="couple-info">
+                <div class="profile">
+                    <div class="avatar">
+                        <img src="photos/d.jpg" alt="Ta的照片">
+                    </div>
+                    <h2>小梅</h2>
+                    <p>一个可爱又迷人的美少女</p>
+                </div>
+                
+                <div class="heart">
+                    <i class="fas fa-heart"></i>
+                    <div class="days-together">
+                        <span id="days-count">0</span>
+                        <p>天</p>
+                    </div>
+                </div>
+                
+                <div class="profile">
+                    <div class="avatar">
+                        <img src="photos/f.jpg" alt="我的照片">
+                    </div>
+                    <h2>小浩</h2>
+                    <p>笨蛋小狗</p>
+                </div>
+            </div>
+            
+            <div class="love-story">
+                <h2>我们的故事</h2>
+                <p>这里的每一段回忆都值得被珍藏，每一个瞬间都值得被记录。从初次相遇的心动，到相知相守的温暖，这一路走来的点点滴滴，都是爱情最美的见证。</p>
+            </div>
+        </section>
+
+        <!-- 纪念日部分 -->
+        <section id="dates" class="section">
+            <h2 class="section-title">纪念日</h2>
+            <div class="container">
+                                <!-- 纪念日列表 -->
+                <div class="anniversary">
+                    <!-- 纪念日卡片将在这里动态生成 -->
+                </div>
+
+                <!-- 添加纪念日表单 -->
+                <div class="add-date">
+                    <h3>添加新的纪念日</h3>
+                    <form id="add-date-form">
+                        <input type="text" name="name" placeholder="纪念日名称" required>
+                        <input type="date" name="date" required>
+                        <button type="submit" class="submit-btn">添加纪念日</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- 照片墙部分 -->
+        <section id="gallery" class="section">
+            <h2 class="section-title">照片墙</h2>
+            
+            <div class="gallery-container">
+                <div class="gallery-item">
+                    <img src="photos/g.jpg" alt="照片1">
+                    <div class="overlay">
+                        <p>特别的日子</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="photos/a.jpg" alt="照片2">
+                    <div class="overlay">
+                        <p>甜蜜时光</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="photos/c.jpg" alt="照片3">
+                    <div class="overlay">
+                        <p>美妙时光</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="photos/i.jpg" alt="照片4">
+                    <div class="overlay">
+                        <p>浪漫晚餐</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="photos/h.jpg" alt="照片5">
+                    <div class="overlay">
+                        <p>难忘时刻</p>
+                    </div>
+                </div>
+                <div class="gallery-item">
+                    <img src="photos/e.jpg" alt="照片6">
+                    <div class="overlay">
+                        <p>快乐时光</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 留言板部分 -->
+<section id="messages" class="section">
+    <h2 class="section-title">留言板</h2>
+    
+    <div class="message-form">
+        <h3>留下你的爱意</h3>
+        <form id="message-form">
+            <input type="text" placeholder="你的名字" required>
+            <textarea placeholder="写下你想说的话..." required></textarea>
+            <div class="form-buttons">
+                <button type="submit">发送爱的留言</button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="message-wall">
+        <!-- 留言将在这里动态显示 -->
+    </div>
+</section>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2025 我们的爱情纪念 | 小浩制作❤️</p>
+            <p>一起走过 <span id="footer-days">0</span> 天</p>
+        </div>
+    </footer>
 
     <script src="script.js"></script>
 </body>
