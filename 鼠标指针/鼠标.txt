@@ -1,0 +1,2 @@
+<img class="cursorimg" style="cursor: url(https://cursor.style/collections/hello-kitty/2526-backpack-and-skater-kitty-cursor.svg) 0 0, auto !important;" src="https://cursor.style/collections/hello-kitty/2526-backpack-and-skater-kitty-cursor.svg">
+<img class="cursorimg" style="cursor: url(https://cursor.style/collections/hello-kitty/2526-backpack-and-skater-kitty-pointer.svg) 0 0, auto !important;" src="https://cursor.style/collections/hello-kitty/2526-backpack-and-skater-kitty-pointer.svg">
