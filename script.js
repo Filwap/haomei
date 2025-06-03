@@ -381,6 +381,28 @@ document.querySelector('.message-wall').addEventListener('click', function(e) {
     }
 });
 
+// 保存数据到服务器
+async function saveToServer(endpoint, data) {
+    try {
+        const response = await fetch(`http://127.0.0.1:8888/www/wwwroot/haomei_fun${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            throw new Error('保存失败');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('保存错误:', error);
+        alert('保存失败，请检查网络连接');
+        throw error;
+    }
+}
+
 // 可靠滚动到顶部函数
 function scrollToTop() {
     const scrollStep = -window.scrollY / (500 / 15);

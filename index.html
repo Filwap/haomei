@@ -172,5 +172,27 @@
     </footer>
 
     <script src="script.js"></script>
+    <script>
+        // 修改表单提交逻辑
+        document.getElementById('message-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = {
+                name: e.target[0].value,
+                content: e.target[1].value
+            };
+
+            try {
+                // 替换为你的腾讯云服务器API地址
+                const response = await fetch('http://你的服务器IP:端口/api/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                if(response.ok) alert('留言提交成功！');
+            } catch (error) {
+                console.error('提交失败:', error);
+            }
+        });
+    </script>
 </body>
 </html>
