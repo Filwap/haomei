@@ -1,0 +1,8 @@
+name = "memorial-site-worker"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "memorial_site_db"
+database_id = "62aab8cd-49a4-42ed-b9c6-0edf8a3db2a3"

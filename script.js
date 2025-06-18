@@ -177,26 +177,42 @@ function setupFormSubmissions() {
     }
 }
 
-// 保存纪念日到localStorage
-function saveAnniversaries() {
-    const anniversaries = [];
-    document.querySelectorAll('.date-card').forEach(card => {
-        anniversaries.push({
-            name: card.querySelector('h3').textContent,
-            date: card.querySelector('.countdown').getAttribute('data-date')
-        });
-    });
-    localStorage.setItem('anniversaries', JSON.stringify(anniversaries));
+// API基础URL - 已更新为实际的Cloudflare Worker URL
+const API_BASE_URL = 'https://memorial-site-worker.lxbtip-ddnscom.workers.dev';
+
+// 保存纪念日到Cloudflare D1数据库
+async function saveAnniversaries() {
+    try {
+        // 这里我们不需要获取所有纪念日并保存，因为每个纪念日都会单独保存
+        return true;
+    } catch (error) {
+        console.error('保存纪念日失败:', error);
+        return false;
+    }
 }
 
-// 加载保存的纪念日
-function loadAnniversaries() {
-    const saved = localStorage.getItem('anniversaries');
-    if (saved) {
-        const anniversaries = JSON.parse(saved);
+// 从Cloudflare D1数据库加载保存的纪念日
+async function loadAnniversaries() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/anniversaries`);
+        if (!response.ok) {
+            throw new Error('获取纪念日失败');
+        }
+        
+        const anniversaries = await response.json();
         anniversaries.forEach(item => {
             addNewDateCard(item.name, item.date, false);
         });
+    } catch (error) {
+        console.error('加载纪念日失败:', error);
+        // 如果API失败，尝试从localStorage加载（作为备份）
+        const saved = localStorage.getItem('anniversaries');
+        if (saved) {
+            const anniversaries = JSON.parse(saved);
+            anniversaries.forEach(item => {
+                addNewDateCard(item.name, item.date, false);
+            });
+        }
     }
 }
 
@@ -204,9 +220,10 @@ function loadAnniversaries() {
  * 添加新的纪念日卡片
  * @param {string} name - 纪念日名称
  * @param {string} date - 纪念日日期
- * @param {boolean} [shouldSave=true] - 是否需要保存到localStorage
+ * @param {boolean} [shouldSave=true] - 是否需要保存到数据库
+ * @param {number} [id] - 纪念日ID（从数据库获取时使用）
  */
-function addNewDateCard(name, date, shouldSave = true) {
+async function addNewDateCard(name, date, shouldSave = true, id = null) {
     const anniversaryContainer = document.querySelector('.anniversary');
     if (!anniversaryContainer) return;
     
@@ -227,25 +244,48 @@ function addNewDateCard(name, date, shouldSave = true) {
         <button class="delete-date-btn">删除</button>
     `;
     
+    // 如果有ID，存储在卡片上
+    if (id) {
+        dateCard.setAttribute('data-id', id);
+    }
+    
     // 添加删除事件
-    dateCard.querySelector('.delete-date-btn').addEventListener('click', function(e) {
+    dateCard.querySelector('.delete-date-btn').addEventListener('click', async function(e) {
         e.stopPropagation(); // 防止事件冒泡
         if (confirm('确定要删除这个纪念日吗？')) {
             dateCard.style.transition = 'all 0.3s ease';
             dateCard.style.opacity = '0';
             dateCard.style.transform = 'translateX(100px)';
             
-            setTimeout(() => {
-                dateCard.remove();
-                saveAnniversaries();
-                calculateAllCountdowns();
-                // 使用更优雅的通知方式
-                const notification = document.createElement('div');
-                notification.className = 'save-notification';
-                notification.textContent = '纪念日已删除！';
-                document.body.appendChild(notification);
-                setTimeout(() => notification.remove(), 2000);
-            }, 300);
+            // 获取纪念日ID
+            const cardId = dateCard.getAttribute('data-id');
+            
+            try {
+                if (cardId) {
+                    // 从数据库删除
+                    await fetch(`${API_BASE_URL}/api/anniversaries`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ id: cardId })
+                    });
+                }
+                
+                setTimeout(() => {
+                    dateCard.remove();
+                    calculateAllCountdowns();
+                    // 使用更优雅的通知方式
+                    const notification = document.createElement('div');
+                    notification.className = 'save-notification';
+                    notification.textContent = '纪念日已删除！';
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 2000);
+                }, 300);
+            } catch (error) {
+                console.error('删除纪念日失败:', error);
+                alert('删除纪念日失败，请重试！');
+            }
         }
     });
     
@@ -255,9 +295,42 @@ function addNewDateCard(name, date, shouldSave = true) {
     // 更新倒计时
     calculateAllCountdowns();
     
-    // 保存到localStorage
+    // 保存到数据库
     if (shouldSave) {
-        saveAnniversaries();
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/anniversaries`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, date })
+            });
+            
+            if (!response.ok) {
+                throw new Error('保存纪念日失败');
+            }
+            
+            const result = await response.json();
+            if (result.success) {
+                // 如果保存成功，将返回的ID存储在卡片上
+                if (result.id) {
+                    dateCard.setAttribute('data-id', result.id);
+                }
+                
+                // 同时保存到localStorage作为备份
+                const saved = localStorage.getItem('anniversaries') || '[]';
+                const anniversaries = JSON.parse(saved);
+                anniversaries.push({ name, date });
+                localStorage.setItem('anniversaries', JSON.stringify(anniversaries));
+            }
+        } catch (error) {
+            console.error('保存纪念日失败:', error);
+            // 如果API保存失败，仍然保存到localStorage作为备份
+            const saved = localStorage.getItem('anniversaries') || '[]';
+            const anniversaries = JSON.parse(saved);
+            anniversaries.push({ name, date });
+            localStorage.setItem('anniversaries', JSON.stringify(anniversaries));
+        }
     }
 }
 
@@ -266,9 +339,10 @@ function addNewDateCard(name, date, shouldSave = true) {
  * @param {string} name - 留言者姓名
  * @param {string} message - 留言内容
  */
-// 保存留言到localStorage
-function saveMessages() {
+// 保存留言到Cloudflare D1数据库
+async function saveMessages() {
     try {
+        // 由于我们现在单独保存每条留言，这个函数主要用于备份到localStorage
         const messages = [];
         document.querySelectorAll('.message').forEach(msg => {
             messages.push({
@@ -278,106 +352,259 @@ function saveMessages() {
             });
         });
         localStorage.setItem('loveMessages', JSON.stringify(messages));
-        console.log('留言保存成功:', messages);
+        console.log('留言备份到localStorage成功:', messages);
         return true;
     } catch (error) {
-        console.error('保存留言失败:', error);
-        alert('保存留言失败，请重试！');
+        console.error('备份留言失败:', error);
         return false;
     }
 }
 
-// 加载保存的留言
-function loadMessages() {
-    const savedMessages = localStorage.getItem('loveMessages');
-    if (savedMessages) {
-        const messages = JSON.parse(savedMessages);
+// 从Cloudflare D1数据库加载保存的留言
+async function loadMessages() {
+    try {
+        // 从Cloudflare D1数据库加载留言
+        const response = await fetch(`${API_BASE_URL}/api/messages`);
+        if (!response.ok) {
+            throw new Error('获取留言失败');
+        }
+        
+        const messages = await response.json();
         const messageWall = document.querySelector('.message-wall');
         
-        messages.reverse().forEach(msg => {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message';
-            messageElement.innerHTML = `
-                <div class="message-header">
-                    <span class="name">${msg.name}</span>
-                    <span class="date">${msg.date}</span>
-                </div>
-                <p>${msg.content}</p>
-                <button class="delete-btn">删除</button>
-            `;
-            messageWall.appendChild(messageElement);
-        });
+        if (messageWall) {
+            messageWall.innerHTML = ''; // 清空现有留言
+            
+            // 按时间倒序显示留言
+            messages.forEach(msg => {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message';
+                messageElement.setAttribute('data-id', msg.id); // 存储留言ID
+                
+                // 格式化日期
+                const date = new Date(msg.timestamp).toLocaleDateString('zh-CN');
+                
+                messageElement.innerHTML = `
+                    <div class="message-header">
+                        <span class="name">${msg.name}</span>
+                        <span class="date">${date}</span>
+                    </div>
+                    <p>${msg.content}</p>
+                    <button class="delete-btn">删除</button>
+                `;
+                messageWall.appendChild(messageElement);
+            });
+        }
+    } catch (error) {
+        console.error('加载留言失败:', error);
+        // 如果API失败，从localStorage加载作为备份
+        const savedMessages = localStorage.getItem('loveMessages');
+        if (savedMessages) {
+            const messages = JSON.parse(savedMessages);
+            const messageWall = document.querySelector('.message-wall');
+            
+            if (messageWall) {
+                messageWall.innerHTML = ''; // 清空现有留言
+                
+                messages.reverse().forEach(msg => {
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'message';
+                    messageElement.innerHTML = `
+                        <div class="message-header">
+                            <span class="name">${msg.name}</span>
+                            <span class="date">${msg.date}</span>
+                        </div>
+                        <p>${msg.content}</p>
+                        <button class="delete-btn">删除</button>
+                    `;
+                    messageWall.appendChild(messageElement);
+                });
+            }
+        }
     }
 }
 
-function addNewMessage(name, message) {
+async function addNewMessage(name, message) {
     const messageWall = document.querySelector('.message-wall');
     if (!messageWall) return;
     
-    // 创建新留言元素
-    const messageElement = document.createElement('div');
-    messageElement.className = 'message';
-    
     // 获取当前日期
     const currentDate = new Date().toLocaleDateString('zh-CN');
+    const timestamp = new Date().toISOString();
     
-    // 设置留言内容
-    messageElement.innerHTML = `
-        <div class="message-header">
-            <span class="name">${name}</span>
-            <span class="date">${currentDate}</span>
-        </div>
-        <p>${message}</p>
-        <button class="delete-btn">删除</button>
-    `;
-    
-    // 添加删除事件监听器
-    messageElement.querySelector('.delete-btn').addEventListener('click', function() {
-        if (confirm('确定要删除这条留言吗？')) {
-            messageElement.style.transition = 'all 0.3s ease';
-            messageElement.style.opacity = '0';
-            messageElement.style.transform = 'translateX(100px)';
-            
-            setTimeout(() => {
-                messageElement.remove();
-                saveMessages();
-                // 显示删除成功提示
-                const notification = document.createElement('div');
-                notification.className = 'save-notification';
-                notification.textContent = '留言已删除！';
-                document.body.appendChild(notification);
-                setTimeout(() => notification.remove(), 2000);
-            }, 300);
+    try {
+        // 保存到Cloudflare D1数据库
+        const response = await fetch(`${API_BASE_URL}/api/messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                content: message
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('保存留言失败');
         }
-    });
-    
-    // 添加到留言墙的顶部
-    messageWall.insertBefore(messageElement, messageWall.firstChild);
-    
-    // 保存留言并显示保存成功提示
-    if (saveMessages()) {
+        
+        // 创建新留言元素
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message';
+        
+        // 设置留言内容
+        messageElement.innerHTML = `
+            <div class="message-header">
+                <span class="name">${name}</span>
+                <span class="date">${currentDate}</span>
+            </div>
+            <p>${message}</p>
+            <button class="delete-btn">删除</button>
+        `;
+        
+        // 添加删除事件监听器
+        messageElement.querySelector('.delete-btn').addEventListener('click', function() {
+            if (confirm('确定要删除这条留言吗？')) {
+                messageElement.style.transition = 'all 0.3s ease';
+                messageElement.style.opacity = '0';
+                messageElement.style.transform = 'translateX(100px)';
+                
+                setTimeout(() => {
+                    messageElement.remove();
+                    saveMessages(); // 更新localStorage备份
+                    // 显示删除成功提示
+                    const notification = document.createElement('div');
+                    notification.className = 'save-notification';
+                    notification.textContent = '留言已删除！';
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 2000);
+                }, 300);
+            }
+        });
+        
+        // 添加到留言墙的顶部
+        messageWall.insertBefore(messageElement, messageWall.firstChild);
+        
+        // 同时保存到localStorage作为备份
+        saveMessages();
+        
+        // 显示保存成功提示
         const notification = document.createElement('div');
         notification.className = 'save-notification';
         notification.textContent = '留言已保存！';
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 2000);
+        
+    } catch (error) {
+        console.error('保存留言失败:', error);
+        
+        // 如果API保存失败，仍然显示留言并保存到localStorage
+        const messageElement = document.createElement('div');
+        messageElement.className = 'message';
+        
+        // 设置留言内容
+        messageElement.innerHTML = `
+            <div class="message-header">
+                <span class="name">${name}</span>
+                <span class="date">${currentDate}</span>
+            </div>
+            <p>${message}</p>
+            <button class="delete-btn">删除</button>
+        `;
+        
+        // 添加删除事件监听器
+        messageElement.querySelector('.delete-btn').addEventListener('click', function() {
+            if (confirm('确定要删除这条留言吗？')) {
+                messageElement.style.transition = 'all 0.3s ease';
+                messageElement.style.opacity = '0';
+                messageElement.style.transform = 'translateX(100px)';
+                
+                setTimeout(() => {
+                    messageElement.remove();
+                    saveMessages();
+                    // 显示删除成功提示
+                    const notification = document.createElement('div');
+                    notification.className = 'save-notification';
+                    notification.textContent = '留言已删除！';
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 2000);
+                }, 300);
+            }
+        });
+        
+        // 添加到留言墙的顶部
+        messageWall.insertBefore(messageElement, messageWall.firstChild);
+        
+        // 保存到localStorage
+        saveMessages();
+        
+        // 显示保存成功提示（但提示用户网络问题）
+        const notification = document.createElement('div');
+        notification.className = 'save-notification warning';
+        notification.textContent = '网络问题，留言已本地保存';
         document.body.appendChild(notification);
         setTimeout(() => notification.remove(), 2000);
     }
 }
 
 // 优化后的删除功能
-document.querySelector('.message-wall').addEventListener('click', function(e) {
-    if (e.target.classList.contains('delete-btn')) {
-        const message = e.target.closest('.message');
-        if (confirm('确定要删除这条留言吗？')) {
-            message.style.transition = 'all 0.3s ease';
-            message.style.opacity = '0';
-            message.style.transform = 'translateX(100px)';
-            
-            setTimeout(() => {
-                message.remove();
-                saveMessages();
-            }, 300);
-        }
+document.addEventListener('DOMContentLoaded', function() {
+    const messageWall = document.querySelector('.message-wall');
+    if (messageWall) {
+        messageWall.addEventListener('click', async function(e) {
+            if (e.target.classList.contains('delete-btn')) {
+                const message = e.target.closest('.message');
+                if (confirm('确定要删除这条留言吗？')) {
+                    message.style.transition = 'all 0.3s ease';
+                    message.style.opacity = '0';
+                    message.style.transform = 'translateX(100px)';
+                    
+                    // 获取留言ID
+                    const messageId = message.getAttribute('data-id');
+                    
+                    try {
+                        if (messageId) {
+                            // 从数据库删除
+                            await fetch(`${API_BASE_URL}/api/messages`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({ id: messageId })
+                            });
+                        }
+                        
+                        setTimeout(() => {
+                            message.remove();
+                            saveMessages(); // 更新localStorage备份
+                            
+                            // 显示删除成功提示
+                            const notification = document.createElement('div');
+                            notification.className = 'save-notification';
+                            notification.textContent = '留言已删除！';
+                            document.body.appendChild(notification);
+                            setTimeout(() => notification.remove(), 2000);
+                        }, 300);
+                    } catch (error) {
+                        console.error('删除留言失败:', error);
+                        
+                        // 即使API删除失败，也从UI中移除
+                        setTimeout(() => {
+                            message.remove();
+                            saveMessages(); // 更新localStorage备份
+                            
+                            // 显示删除成功提示，但带有警告
+                            const notification = document.createElement('div');
+                            notification.className = 'save-notification warning';
+                            notification.textContent = '网络问题，留言已本地删除';
+                            document.body.appendChild(notification);
+                            setTimeout(() => notification.remove(), 2000);
+                        }, 300);
+                    }
+                }
+            }
+        });
     }
 });
 
