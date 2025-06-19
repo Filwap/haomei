@@ -1,114 +1,144 @@
-# 纪念网站部署指南
+# 纪念网站
 
-这个指南将帮助你设置和部署纪念网站的后端服务，包括Cloudflare D1数据库和Worker。
+一个专门用于记录和分享美好回忆的网站，支持在线和离线使用，具有自动数据同步功能。
 
-## 前置要求
+## 功能特点
 
-1. 安装 [Node.js](https://nodejs.org/) (版本 16.13.0 或更高)
-2. 安装 Wrangler CLI:
-   ```bash
-   npm install -g wrangler
-   ```
-3. 登录到你的Cloudflare账户:
-   ```bash
-   wrangler login
-   ```
+### 1. 纪念日管理
+- 添加重要的纪念日期
+- 自动计算倒计时
+- 支持自定义纪念日名称和日期
 
-## 设置步骤
+### 2. 留言板
+- 发布留言和心情
+- 支持离线留言
+- 网络恢复后自动同步
 
-### 1. 创建D1数据库
+### 3. 照片墙
+- 展示珍贵的照片回忆
+- 支持照片预览
+- 优雅的图片布局
 
+### 4. 在线/离线支持
+- 支持离线访问和操作
+- 网络恢复后自动同步数据
+- 实时网络状态提示
+
+### 5. 背景音乐
+- 支持自定义背景音乐
+- 音乐播放控制
+- 优雅的音乐播放器界面
+
+## 技术特点
+
+- 前端：原生JavaScript，无需框架依赖
+- 后端：Cloudflare Workers
+- 数据库：Cloudflare D1（SQLite）
+- 存储：GitHub（照片存储）
+- 部署：GitHub Pages（前端）+ Cloudflare Workers（后端）
+
+## 部署指南
+
+我们提供了两份部署指南，根据你的技术水平选择合适的指南：
+
+1. [快速部署指南](快速部署指南.md) - 专为技术小白设计，包含详细的图文说明
+2. [详细部署指南](部署指南.md) - 包含完整的技术细节和配置说明
+
+## 开发环境设置
+
+1. 克隆仓库：
 ```bash
-# 创建数据库
-wrangler d1 create memorial_site_db
-
-# 输出将类似于：
-# ✅ Created database 'memorial_site_db' (ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+git clone https://github.com/你的用户名/memorial-site.git
+cd memorial-site
 ```
 
-将输出的数据库ID复制到 `wrangler.toml` 文件中的 `database_id` 字段。
-
-### 2. 创建数据库表
-
+2. 安装依赖：
 ```bash
-# 创建本地D1数据库用于开发
-wrangler d1 execute memorial_site_db --local --file=./schema.sql
-
-# 在生产环境创建表
-wrangler d1 execute memorial_site_db --file=./schema.sql
+npm install
 ```
 
-### 3. 部署Worker
-
+3. 本地开发：
 ```bash
-# 部署Worker到Cloudflare
-wrangler deploy
+# 启动本地开发服务器
+wrangler dev
+
+# 在另一个终端窗口启动前端
+npx http-server
 ```
 
-### 4. 更新网站配置
+## 项目结构
 
-在 `script.js` 文件中，将 `API_BASE_URL` 更新为你的Worker URL：
+```
+memorial-site/
+├── index.html          # 主页面
+├── admin.html         # 管理员页面
+├── styles.css         # 主样式文件
+├── admin.css         # 管理员页面样式
+├── script.js         # 主要JavaScript代码
+├── sync.js          # 数据同步相关代码
+├── worker.js        # Cloudflare Worker代码
+├── wrangler.toml    # Wrangler配置文件
+├── schema.sql       # 数据库架构
+└── photos/          # 照片存储目录
+```
 
+## 配置说明
+
+### 1. Cloudflare Workers配置
+配置文件：`wrangler.toml`
+```toml
+name = "memorial-site-worker"
+main = "worker.js"
+compatibility_date = "2023-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "memorial-site-db"
+database_id = "你的数据库ID"
+```
+
+### 2. 前端API配置
+配置文件：`script.js`
 ```javascript
-const API_BASE_URL = 'https://memorial-site-worker.[your-username].workers.dev';
+const API_BASE_URL = 'https://your-worker.workers.dev';
 ```
 
-将 `[your-username]` 替换为你的Cloudflare账户子域名。
+## 常见问题
 
-## 本地开发
+### Q: 如何修改网站标题和样式？
+A: 编辑 `index.html` 和 `styles.css` 文件进行自定义。
 
-1. 启动本地开发服务器：
-   ```bash
-   wrangler dev
-   ```
+### Q: 如何添加/更换背景音乐？
+A: 将音乐文件放在 `music` 目录下，并在 `script.js` 中更新音乐配置。
 
-2. 在浏览器中访问 `http://localhost:8787` 测试API
+### Q: 如何设置管理员密码？
+A: 在 `worker.js` 中修改 `ADMIN_PASSWORD` 常量。
 
-## 数据库操作
-
-### 查看数据
-
+### Q: 数据如何备份？
+A: 所有数据都存储在Cloudflare D1数据库中，可以使用Wrangler命令导出备份：
 ```bash
-# 查看所有留言
-wrangler d1 execute memorial_site_db --command="SELECT * FROM messages;"
-
-# 查看所有纪念日
-wrangler d1 execute memorial_site_db --command="SELECT * FROM anniversaries;"
+wrangler d1 backup memorial-site-db
 ```
 
-### 备份数据
+## 贡献指南
 
-```bash
-# 导出数据库
-wrangler d1 backup memorial_site_db
-```
+1. Fork 本仓库
+2. 创建你的特性分支：`git checkout -b feature/AmazingFeature`
+3. 提交你的改动：`git commit -m 'Add some AmazingFeature'`
+4. 推送到分支：`git push origin feature/AmazingFeature`
+5. 提交 Pull Request
 
-## 故障排除
+## 许可证
 
-1. 如果遇到CORS错误，确保Worker中的CORS头部配置正确
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
 
-2. 如果数据库操作失败：
-   - 检查数据库ID是否正确配置
-   - 确保SQL语句语法正确
-   - 查看Worker的错误日志
+## 联系方式
 
-3. 如果Worker部署失败：
-   - 确保wrangler.toml配置正确
-   - 检查是否有语法错误
-   - 确保已经登录到Cloudflare账户
+如果你在使用过程中遇到任何问题，可以：
+1. 提交 Issue
+2. 发送邮件至：[你的邮箱]
+3. 在项目讨论区提问
 
-## 安全注意事项
+---
 
-1. 不要在代码中硬编码敏感信息
-2. 考虑添加适当的访问控制
-3. 定期备份数据库
-4. 监控Worker的使用情况
-
-## 维护
-
-1. 定期更新依赖包
-2. 监控Worker的性能
-3. 检查数据库大小和使用情况
-4. 保持代码库的更新
-
-如果遇到任何问题，请查看 [Cloudflare Workers文档](https://developers.cloudflare.com/workers/) 或 [D1数据库文档](https://developers.cloudflare.com/d1/)。
+希望这个项目能帮助你记录和分享美好的回忆！

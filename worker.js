@@ -1,5 +1,42 @@
 // Cloudflare Worker脚本，用于处理与D1数据库的交互
 
+// JWT密钥生成函数
+function generateJWT(payload, secret) {
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const encodedHeader = btoa(JSON.stringify(header));
+  const encodedPayload = btoa(JSON.stringify(payload));
+  const signature = btoa(
+    Array.from(
+      new Uint8Array(
+        crypto.subtle.sign(
+          'HMAC',
+          secret,
+          new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`)
+        )
+      )
+    ).map(byte => String.fromCharCode(byte)).join('')
+  );
+  return `${encodedHeader}.${encodedPayload}.${signature}`;
+}
+
+// JWT验证函数
+async function verifyJWT(token, secret) {
+  try {
+    const [encodedHeader, encodedPayload, signature] = token.split('.');
+    const signatureCheck = await crypto.subtle.verify(
+      'HMAC',
+      secret,
+      new Uint8Array(atob(signature).split('').map(c => c.charCodeAt(0))),
+      new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`)
+    );
+    
+    if (!signatureCheck) return null;
+    return JSON.parse(atob(encodedPayload));
+  } catch (error) {
+    return null;
+  }
+}
+
 export default {
   async fetch(request, env) {
     try {
@@ -9,6 +46,16 @@ export default {
       // 处理CORS预检请求
       if (request.method === "OPTIONS") {
         return handleCORS();
+      }
+      
+      // 管理员API路由
+      if (path.startsWith('/api/admin/')) {
+        if (path === '/api/admin/login' && request.method === 'POST') {
+          return handleAdminLogin(request, env);
+        }
+        else if (path === '/api/admin/verify' && request.method === 'GET') {
+          return handleAdminVerify(request, env);
+        }
       }
       
       // API路由
@@ -49,8 +96,78 @@ function handleCORS() {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
       "Access-Control-Max-Age": "86400"
+    }
+  });
+}
+
+// 处理管理员登录
+async function handleAdminLogin(request, env) {
+  const data = await request.json();
+  
+  // 验证管理员密码
+  if (!data.password || data.password !== env.ADMIN_PASSWORD) {
+    return new Response(JSON.stringify({ error: "密码错误" }), {
+      status: 401,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+  
+  // 生成JWT令牌
+  const token = generateJWT(
+    {
+      admin: true,
+      exp: Date.now() + 24 * 60 * 60 * 1000, // 24小时过期
+      githubToken: env.GITHUB_TOKEN // 将GitHub令牌包含在JWT中
+    },
+    env.JWT_SECRET
+  );
+  
+  return new Response(JSON.stringify({ token }), {
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
+}
+
+// 处理管理员验证
+async function handleAdminVerify(request, env) {
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: "未授权" }), {
+      status: 401,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+  
+  const token = authHeader.split(' ')[1];
+  const payload = await verifyJWT(token, env.JWT_SECRET);
+  
+  if (!payload || !payload.admin || payload.exp < Date.now()) {
+    return new Response(JSON.stringify({ error: "令牌无效或已过期" }), {
+      status: 401,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
+  
+  return new Response(JSON.stringify({ 
+    valid: true,
+    token: env.GITHUB_TOKEN // 返回GitHub令牌
+  }), {
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*"
     }
   });
 }
