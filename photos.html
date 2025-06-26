@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #e91e63;
+        }
+        
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        label {
+            font-weight: bold;
+            color: #666;
+        }
+        
+        input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        button {
+            background-color: #e91e63;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #c2185b;
+        }
+        
+        .message {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .nav-link {
+            color: #666;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: #e91e63;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>照片管理</h1>
+        <form id="upload-form" class="upload-form">
+            <div class="form-group">
+                <label for="photo">选择照片</label>
+                <input type="file" id="photo" name="photo" accept="image/*" required>
+            </div>
+            <div class="form-group">
+                <label for="description">照片描述</label>
+                <textarea id="description" name="description" placeholder="请输入照片描述（可选）"></textarea>
+            </div>
+            <button type="submit">上传照片</button>
+        </form>
+        <div id="message" class="message" style="display: none;"></div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">返回首页</a>
+            <a href="#" id="logout" class="nav-link">退出登录</a>
+        </div>
+    </div>
+
+    <script>
+        // API URL - 与script.js中保持一致
+        const API_URL = 'https://memorial-site-worker.lxbtip-ddnscom.workers.dev';
+        
+        // 检查是否已登录
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+            window.location.href = 'admin.html';
+        }
+        
+        // DOM元素
+        const uploadForm = document.getElementById('upload-form');
+        const messageDiv = document.getElementById('message');
+        const logoutBtn = document.getElementById('logout');
+        
+        // 显示消息
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 处理照片上传
+        uploadForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const photoFile = document.getElementById('photo').files[0];
+            const description = document.getElementById('description').value;
+            
+            if (!photoFile) {
+                showMessage('请选择要上传的照片', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('photo', photoFile);
+            formData.append('description', description);
+            
+            try {
+                const response = await fetch(`${API_URL}/api/photos`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage('照片上传成功！', 'success');
+                    uploadForm.reset();
+                } else {
+                    showMessage(data.error || '上传失败，请重试', 'error');
+                }
+            } catch (error) {
+                console.error('上传请求失败:', error);
+                showMessage('上传请求失败，请稍后再试', 'error');
+            }
+        });
+        
+        // 处理退出登录
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            localStorage.removeItem('adminToken');
+            window.location.href = 'admin.html';
+        });
+    </script>
+</body>
+</html>

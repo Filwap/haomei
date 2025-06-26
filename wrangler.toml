@@ -1,16 +1,22 @@
 name = "memorial-site-worker"
 main = "worker.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2023-01-01"
 
-[[d1_databases]]
-binding = "DB"
-database_name = "memorial_site_db"
-database_id = "62aab8cd-49a4-42ed-b9c6-0edf8a3db2a3"
+# KV命名空间绑定
+# KV命名空间已创建，ID已更新
+kv_namespaces = [
+  { binding = "MEMORIAL_KV", id = "653ffd69ab4749b982e8bae166109a55" }
+]
 
-# 环境变量（开发环境）
-# 注意：在生产环境中，请通过Cloudflare Dashboard设置这些变量为加密的环境变量
-[vars]
-# 这些是示例值，请替换为实际值
-ADMIN_PASSWORD = "change_this_to_secure_password"
-JWT_SECRET = "change_this_to_random_string"
-GITHUB_TOKEN = "your_github_personal_access_token"
+# 配置路由（可选）
+# 如果你想使用自定义域名，可以在这里配置
+# routes = [
+#   { pattern = "api.yourdomain.com/*", zone_name = "yourdomain.com" }
+# ]
+
+# 触发器配置
+triggers = { crons = [] }
+
+# 环境变量（可选）
+# [vars]
+# MY_VARIABLE = "my-value"

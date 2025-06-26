@@ -653,6 +653,17 @@ footer {
     }
 }
 
+/* 管理员入口链接样式 */
+.admin-link {
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 12px;
+    transition: color 0.3s ease;
+}
+
+.admin-link:hover {
+    color: rgba(255, 255, 255, 0.6);
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
     .header-content h1 {
