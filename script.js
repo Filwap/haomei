@@ -182,7 +182,7 @@ function setupFormSubmissions() {
 
 // Cloudflare Worker API URL
 // 部署Worker后需要更新此URL
-const API_URL = 'https://memorial-site-worker.lxbtip-ddnscom.workers.dev';
+const API_URL = 'https://memorial-site-worker.lxbtip.workers.dev';
 
 // 检查API连接状态
 async function checkApiConnection() {

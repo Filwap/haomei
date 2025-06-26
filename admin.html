@@ -121,7 +121,7 @@
     
     <script>
         // API URL - 与script.js中保持一致
-        const API_URL = 'https://memorial-site-worker.lxbtip-ddnscom.workers.dev';
+        const API_URL = 'https://memorial-site-worker.lxbtip.workers.dev';
         
         // DOM元素
         const loginForm = document.getElementById('login-form');
@@ -139,7 +139,7 @@
                 loginError.textContent = '登录中...';
                 loginError.style.color = '#666';
                 
-                const response = await fetch(`${API_URL}/admin/login`, {
+                const response = await fetch(`${API_URL}/api/admin/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

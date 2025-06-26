@@ -140,7 +140,7 @@
 
     <script>
         // API URL - 与script.js中保持一致
-        const API_URL = 'https://memorial-site-worker.lxbtip-ddnscom.workers.dev';
+        const API_URL = 'https://memorial-site-worker.lxbtip.workers.dev';
         
         // 检查是否已登录
         const token = localStorage.getItem('adminToken');
@@ -180,7 +180,7 @@
             formData.append('description', description);
             
             try {
-                const response = await fetch(`${API_URL}/api/photos`, {
+                const response = await fetch(`${API_URL}/api/admin/upload-photo`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
