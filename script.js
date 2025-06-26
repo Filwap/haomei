@@ -17,9 +17,12 @@ const OPERATION_TYPES = {
 let syncManager;
 
 document.addEventListener('DOMContentLoaded', function() {
-    // 设置恋爱开始日期（示例日期，需要修改为实际日期）
-    const loveStartDate = new Date('2025-04-17');
+    // 设置恋爱开始日期（修改为实际日期）
+    const loveStartDate = new Date('2023-04-17');
 
+    // 初始化欢迎弹窗
+    initWelcomeModal();
+    
     // 初始化同步管理器
     initSyncManager();
     
@@ -52,7 +55,52 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 每小时更新一次倒计时
     setInterval(calculateAllCountdowns, 3600000); // 1小时 = 3600000毫秒
+
+    // 清除欢迎状态，使得每次刷新都显示欢迎弹窗
+    localStorage.removeItem('welcomed');
 });
+
+/**
+ * 初始化欢迎弹窗
+ */
+function initWelcomeModal() {
+    const welcomeModal = document.getElementById('welcome-modal');
+    const welcomeOverlay = document.getElementById('welcome-overlay');
+    const closeWelcomeBtn = document.getElementById('close-welcome');
+
+    // 显示欢迎弹窗
+    welcomeModal.style.display = 'block';
+    welcomeOverlay.style.display = 'block';
+
+    // 关闭欢迎弹窗
+    closeWelcomeBtn.addEventListener('click', function() {
+        welcomeModal.style.display = 'none';
+        welcomeOverlay.style.display = 'none';
+        localStorage.setItem('welcomed', 'true');
+    });
+}
+
+/**
+ * 初始化背景音乐
+ */
+function initBackgroundMusic() {
+    const bgMusic = document.getElementById('bgMusic');
+    const musicControl = document.getElementById('musicControl');
+    let isPlaying = false;
+
+    if (musicControl && bgMusic) {
+        musicControl.addEventListener('click', function() {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicControl.classList.remove('playing');
+            } else {
+                bgMusic.play();
+                musicControl.classList.add('playing');
+            }
+            isPlaying = !isPlaying;
+        });
+    }
+}
 
 /**
  * 初始化同步管理器
@@ -89,25 +137,14 @@ function setupNetworkListener() {
     // 创建网络状态指示器
     const statusIndicator = document.createElement('div');
     statusIndicator.className = 'network-status';
-    statusIndicator.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 14px;
-        z-index: 1000;
-        transition: all 0.3s ease;
-        display: none;
-    `;
     document.body.appendChild(statusIndicator);
 
     // 更新网络状态UI
     function updateNetworkStatus(online) {
         statusIndicator.style.display = 'block';
         if (online) {
-            statusIndicator.style.backgroundColor = '#4CAF50';
-            statusIndicator.style.color = 'white';
+            statusIndicator.classList.add('online');
+            statusIndicator.classList.remove('offline');
             statusIndicator.textContent = '网络已连接';
             // 网络恢复时触发同步
             syncManager.syncAll();
@@ -116,8 +153,8 @@ function setupNetworkListener() {
                 statusIndicator.style.display = 'none';
             }, 3000);
         } else {
-            statusIndicator.style.backgroundColor = '#f44336';
-            statusIndicator.style.color = 'white';
+            statusIndicator.classList.add('offline');
+            statusIndicator.classList.remove('online');
             statusIndicator.textContent = '网络已断开';
         }
     }
@@ -282,162 +319,98 @@ function setupFormSubmissions() {
     }
 }
 
-// API基础URL - 已更新为实际的Cloudflare Worker URL
-const API_BASE_URL = 'https://memorial-site-worker.lxbtip-ddnscom.workers.dev';
-
-// 管理员认证相关函数
-async function adminLogin(password) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ password })
-        });
-        
-        if (!response.ok) {
-            throw new Error('登录失败');
-        }
-        
-        const data = await response.json();
-        if (data.token) {
-            localStorage.setItem('admin_token', data.token);
-            return true;
-        }
-        return false;
-    } catch (error) {
-        console.error('管理员登录失败:', error);
-        return false;
-    }
-}
-
-async function verifyAdmin() {
-    const token = localStorage.getItem('admin_token');
-    if (!token) return false;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/verify`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (!response.ok) {
-            localStorage.removeItem('admin_token');
-            return false;
-        }
-        
-        const data = await response.json();
-        return data.valid === true;
-    } catch (error) {
-        console.error('验证失败:', error);
-        localStorage.removeItem('admin_token');
-        return false;
-    }
-}
-
-// 获取GitHub令牌
-async function getGitHubToken() {
-    const token = localStorage.getItem('admin_token');
-    if (!token) return null;
-    
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/admin/verify`, {
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        
-        if (!response.ok) return null;
-        
-        const data = await response.json();
-        return data.token;
-    } catch (error) {
-        console.error('获取GitHub令牌失败:', error);
-        return null;
-    }
-}
-
-// 照片墙加载函数
-async function loadGallery() {
-    const galleryContainer = document.querySelector('.gallery-container');
-    if (!galleryContainer) return;
-    
-    try {
-        // 尝试使用GitHub令牌获取照片
-        let response;
-        let useToken = false;
-        
-        try {
-            const githubToken = await getGitHubToken();
-            if (githubToken) {
-                response = await fetch('https://api.github.com/repos/Filwap/memorial-site/contents/photos', {
-                    headers: {
-                        'Authorization': `token ${githubToken}`,
-                        'Accept': 'application/vnd.github.v3+json'
-                    }
+// 照片墙相关函数
+function initLazyLoading() {
+    const images = document.querySelectorAll('.gallery-item img[data-src]');
+    const imageObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                img.src = img.dataset.src;
+                img.addEventListener('load', () => {
+                    img.classList.add('loaded');
                 });
-                useToken = true;
+                observer.unobserve(img);
             }
-        } catch (tokenError) {
-            console.log('无法获取GitHub令牌，将使用公共访问:', tokenError);
-        }
-        
-        // 如果没有令牌或令牌请求失败，使用公共访问
-        if (!useToken) {
-            response = await fetch('https://api.github.com/repos/Filwap/memorial-site/contents/photos');
-        }
-        
-        if (!response.ok) {
-            throw new Error('获取照片列表失败');
-        }
-        
-        const files = await response.json();
-        // 过滤出图片文件
-        window.galleryPhotos = files.filter(file => 
-            file.name.match(/\.(jpg|jpeg|png|gif)$/i)
-        );
-        
-        // 生成照片墙HTML
-        galleryContainer.innerHTML = window.galleryPhotos.map((photo, index) => `
-            <div class="gallery-item" onclick="openPhotoModal(${index})">
-                <img data-src="${photo.download_url}" alt="${photo.name}" loading="lazy">
-                <div class="overlay">
-                    <p>美好回忆 ${index + 1}</p>
-                </div>
-            </div>
-        `).join('');
-        
-        // 初始化懒加载
-        initLazyLoading();
-        
-    } catch (error) {
-        console.error('加载照片失败:', error);
-        galleryContainer.innerHTML = '<div class="error-message">加载照片失败，请刷新页面重试</div>';
-    }
-}
-
-// 保存纪念日到Cloudflare D1数据库
-async function saveAnniversaries() {
-    try {
-        // 这里我们不需要获取所有纪念日并保存，因为每个纪念日都会单独保存
-        return true;
-    } catch (error) {
-        console.error('保存纪念日失败:', error);
-        return false;
-    }
-}
-
-// 从数据库加载保存的纪念日
-async function loadAnniversaries() {
-    try {
-        // 使用同步管理器获取所有纪念日
-        const anniversaries = await syncManager.getAllFromStore(DATA_TYPES.ANNIVERSARY);
-        
-        // 显示所有纪念日
-        anniversaries.forEach(item => {
-            addNewDateCard(item.name, item.date, false, item.id);
         });
-        
-        // 触发同步
+    });
+
+    images.forEach(img => imageObserver.observe(img));
+}
+
+// 照片预览模态框相关函数
+let currentPhotoIndex = 0;
+
+function openPhotoModal(index) {
+    const modal = document.getElementById('photoModal');
+    const modalPhoto = document.getElementById('modalPhoto');
+    const loadingSpinner = document.getElementById('photoLoading');
+    
+    currentPhotoIndex = index;
+    modal.style.display = 'block';
+    modalPhoto.classList.add('loading');
+    loadingSpinner.style.display = 'block';
+    
+    const photo = window.galleryPhotos[index];
+    modalPhoto.src = photo.download_url;
+    
+    modalPhoto.onload = function() {
+        modalPhoto.classList.remove('loading');
+        loadingSpinner.style.display = 'none';
+    };
+}
+
+function closePhotoModal() {
+    const modal = document.getElementById('photoModal');
+    modal.style.display = 'none';
+}
+
+function showNextPhoto() {
+    currentPhotoIndex = (currentPhotoIndex + 1) % window.galleryPhotos.length;
+    openPhotoModal(currentPhotoIndex);
+}
+
+function showPrevPhoto() {
+    currentPhotoIndex = (currentPhotoIndex - 1 + window.galleryPhotos.length) % window.galleryPhotos.length;
+    openPhotoModal(currentPhotoIndex);
+}
+
+// 添加事件监听器
+document.addEventListener('DOMContentLoaded', function() {
+    // 照片模态框关闭按钮
+    const closeModalBtn = document.querySelector('.close-modal');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', closePhotoModal);
+    }
+    
+    // 上一张/下一张按钮
+    const prevBtn = document.querySelector('.prev-photo');
+    const nextBtn = document.querySelector('.next-photo');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            showPrevPhoto();
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            showNextPhoto();
+        });
+    }
+    
+    // 键盘事件
+    document.addEventListener('keydown', function(e) {
+        if (document.getElementById('photoModal').style.display === 'block') {
+            if (e.key === 'ArrowLeft') {
+                showPrevPhoto();
+            } else if (e.key === 'ArrowRight') {
+                showNextPhoto();
+            } else if (e.key === 'Escape') {
+                closePhotoModal();
+            }
+        }
+    });
+});
