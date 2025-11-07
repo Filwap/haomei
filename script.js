@@ -11,9 +11,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // 加载已保存的留言
     loadMessages();
     
-    // 加载照片
-    loadPhotos();
-    
     // 计算恋爱天数
     calculateDaysTogether(loveStartDate);
     
@@ -25,6 +22,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 设置表单提交事件
     setupFormSubmissions();
+    
+    // 初始化视频墙
+    initVideoWall();
     
     // 每天更新一次天数
     setInterval(() => calculateDaysTogether(loveStartDate), 86400000); // 24小时 = 86400000毫秒
@@ -180,87 +180,20 @@ function setupFormSubmissions() {
     }
 }
 
-// Cloudflare Worker API URL
-// 部署Worker后需要更新此URL
-const API_URL = 'https://memorial-site-worker.lxbtip.workers.dev';
-
-// 检查API连接状态
-async function checkApiConnection() {
-    try {
-        const response = await fetch(`${API_URL}/api/messages`);
-        if (!response.ok) {
-            console.warn('API连接失败，将使用本地存储模式');
-            return false;
-        }
-        console.log('API连接成功，使用云端存储模式');
-        return true;
-    } catch (error) {
-        console.warn('API连接失败，将使用本地存储模式:', error);
-        return false;
-    }
-}
-
-// 页面加载时检查API连接
-window.addEventListener('load', checkApiConnection);
-
-// 保存纪念日到Cloudflare KV存储
-async function saveAnniversaries() {
-    try {
-        const anniversaries = [];
-        document.querySelectorAll('.date-card').forEach(card => {
-            anniversaries.push({
-                name: card.querySelector('h3').textContent,
-                date: card.querySelector('.countdown').getAttribute('data-date')
-            });
+// 保存纪念日到localStorage
+function saveAnniversaries() {
+    const anniversaries = [];
+    document.querySelectorAll('.date-card').forEach(card => {
+        anniversaries.push({
+            name: card.querySelector('h3').textContent,
+            date: card.querySelector('.countdown').getAttribute('data-date')
         });
-        
-        // 同时保存到localStorage作为备份
-        localStorage.setItem('anniversaries', JSON.stringify(anniversaries));
-        
-        // 保存到Cloudflare Worker
-        const response = await fetch(`${API_URL}/api/anniversaries`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(anniversaries)
-        });
-        
-        if (!response.ok) {
-            throw new Error('保存到云端失败');
-        }
-        
-        console.log('纪念日保存到云端成功');
-        return true;
-    } catch (error) {
-        console.error('保存纪念日到云端失败:', error);
-        // 失败时仍然返回true，因为已经保存到了localStorage
-        return true;
-    }
+    });
+    localStorage.setItem('anniversaries', JSON.stringify(anniversaries));
 }
 
 // 加载保存的纪念日
-async function loadAnniversaries() {
-    try {
-        // 尝试从Cloudflare Worker加载
-        const response = await fetch(`${API_URL}/api/anniversaries`);
-        
-        if (response.ok) {
-            const anniversaries = await response.json();
-            if (Array.isArray(anniversaries) && anniversaries.length > 0) {
-                anniversaries.forEach(item => {
-                    addNewDateCard(item.name, item.date, false);
-                });
-                console.log('从云端加载纪念日成功');
-                return;
-            }
-        }
-    } catch (error) {
-        console.error('从云端加载纪念日失败:', error);
-    }
-    
-    // 如果从云端加载失败，尝试从localStorage加载
-    console.log('尝试从本地加载纪念日');
+function loadAnniversaries() {
     const saved = localStorage.getItem('anniversaries');
     if (saved) {
         const anniversaries = JSON.parse(saved);
@@ -336,8 +269,8 @@ function addNewDateCard(name, date, shouldSave = true) {
  * @param {string} name - 留言者姓名
  * @param {string} message - 留言内容
  */
-// 保存留言到Cloudflare KV存储
-async function saveMessages() {
+// 保存留言到localStorage
+function saveMessages() {
     try {
         const messages = [];
         document.querySelectorAll('.message').forEach(msg => {
@@ -347,74 +280,24 @@ async function saveMessages() {
                 content: msg.querySelector('p').textContent
             });
         });
-        
-        // 同时保存到localStorage作为备份
         localStorage.setItem('loveMessages', JSON.stringify(messages));
-        
-        // 保存到Cloudflare Worker
-        const response = await fetch(`${API_URL}/api/messages`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(messages)
-        });
-        
-        if (!response.ok) {
-            throw new Error('保存到云端失败');
-        }
-        
-        console.log('留言保存到云端成功');
+        console.log('留言保存成功:', messages);
         return true;
     } catch (error) {
-        console.error('保存留言到云端失败:', error);
-        // 如果云端保存失败但本地保存成功，仍然返回true
-        return true;
+        console.error('保存留言失败:', error);
+        alert('保存留言失败，请重试！');
+        return false;
     }
 }
 
-// 从Cloudflare KV存储加载留言
-async function loadMessages() {
-    try {
-        // 尝试从Cloudflare Worker加载
-        const response = await fetch(`${API_URL}/api/messages`);
-        
-        if (response.ok) {
-            const messages = await response.json();
-            if (Array.isArray(messages) && messages.length > 0) {
-                const messageWall = document.querySelector('.message-wall');
-                messageWall.innerHTML = ''; // 清空现有留言
-                
-                messages.forEach(msg => {
-                    const messageElement = document.createElement('div');
-                    messageElement.className = 'message';
-                    messageElement.innerHTML = `
-                        <div class="message-header">
-                            <span class="name">${msg.name}</span>
-                            <span class="date">${msg.date}</span>
-                        </div>
-                        <p>${msg.content}</p>
-                        <button class="delete-btn">删除</button>
-                    `;
-                    messageWall.appendChild(messageElement);
-                });
-                console.log('从云端加载留言成功');
-                return;
-            }
-        }
-    } catch (error) {
-        console.error('从云端加载留言失败:', error);
-    }
-    
-    // 如果从云端加载失败，尝试从localStorage加载
-    console.log('尝试从本地加载留言');
+// 加载保存的留言
+function loadMessages() {
     const savedMessages = localStorage.getItem('loveMessages');
     if (savedMessages) {
         const messages = JSON.parse(savedMessages);
         const messageWall = document.querySelector('.message-wall');
-        messageWall.innerHTML = ''; // 清空现有留言
         
-        messages.forEach(msg => {
+        messages.reverse().forEach(msg => {
             const messageElement = document.createElement('div');
             messageElement.className = 'message';
             messageElement.innerHTML = `
@@ -430,7 +313,7 @@ async function loadMessages() {
     }
 }
 
-async function addNewMessage(name, message) {
+function addNewMessage(name, message) {
     const messageWall = document.querySelector('.message-wall');
     if (!messageWall) return;
     
@@ -450,32 +333,6 @@ async function addNewMessage(name, message) {
         <p>${message}</p>
         <button class="delete-btn">删除</button>
     `;
-    
-    // 尝试保存到云端
-    try {
-        const newMessage = {
-            name: name,
-            date: currentDate,
-            content: message
-        };
-        
-        const response = await fetch(`${API_URL}/api/messages`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify([newMessage])
-        });
-        
-        if (!response.ok) {
-            throw new Error('保存到云端失败');
-        }
-        
-        console.log('新留言保存到云端成功');
-    } catch (error) {
-        console.error('保存新留言到云端失败:', error);
-        // 即使云端保存失败，我们仍然会继续添加到本地
-    }
     
     // 添加删除事件监听器
     messageElement.querySelector('.delete-btn').addEventListener('click', function() {
@@ -515,43 +372,13 @@ document.querySelector('.message-wall').addEventListener('click', function(e) {
     if (e.target.classList.contains('delete-btn')) {
         const message = e.target.closest('.message');
         if (confirm('确定要删除这条留言吗？')) {
-            // 获取留言信息，用于从云端删除
-            const name = message.querySelector('.name').textContent;
-            const date = message.querySelector('.date').textContent;
-            const content = message.querySelector('p').textContent;
-            
             message.style.transition = 'all 0.3s ease';
             message.style.opacity = '0';
             message.style.transform = 'translateX(100px)';
             
-            setTimeout(async () => {
+            setTimeout(() => {
                 message.remove();
-                // 保存到本地
                 saveMessages();
-                
-                // 同步到云端
-                try {
-                    const response = await fetch(`${API_URL}/api/messages`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            name: name,
-                            date: date,
-                            content: content
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error('从云端删除失败');
-                    }
-                    
-                    console.log('从云端删除留言成功');
-                } catch (error) {
-                    console.error('从云端删除留言失败:', error);
-                    // 即使云端删除失败，本地删除仍然有效
-                }
             }, 300);
         }
     }
@@ -827,43 +654,155 @@ function initBackgroundMusic() {
 }());
 
 /**
- * 从Cloudflare Worker加载照片并显示在照片墙中
+ * 初始化视频墙功能
  */
-async function loadPhotos() {
-    const photoGallery = document.getElementById('photo-gallery');
-    if (!photoGallery) return;
+function initVideoWall() {
+    // 为所有视频添加自定义控制
+    const videos = document.querySelectorAll('.video-item video');
     
-    try {
-        // 尝试从Cloudflare Worker加载照片
-        const response = await fetch(`${API_URL}/api/photos`);
+    videos.forEach(video => {
+        // 确保视频控件显示
+        video.controls = true;
         
-        if (response.ok) {
-            const photos = await response.json();
-            if (Array.isArray(photos) && photos.length > 0) {
-                // 保留默认照片，添加从服务器获取的照片
-                photos.forEach(photo => {
-                    // 创建新的照片元素
-                    const photoElement = document.createElement('div');
-                    photoElement.className = 'gallery-item';
-                    
-                    photoElement.innerHTML = `
-                        <img src="${photo.url}" alt="${photo.description || '照片'}">
-                        <div class="overlay">
-                            <p>${photo.description || '美好回忆'}</p>
-                        </div>
-                    `;
-                    
-                    // 添加到照片墙
-                    photoGallery.appendChild(photoElement);
-                });
-                
-                console.log('从云端加载照片成功');
-            }
-        } else {
-            console.error('从云端加载照片失败:', await response.text());
+        // 添加视频加载错误处理
+        video.addEventListener('error', function() {
+            console.error('视频加载失败:', video.src);
+            // 显示错误提示
+            showVideoError(video);
+        });
+        
+        // 添加视频加载完成事件
+        video.addEventListener('loadeddata', function() {
+            console.log('视频加载完成:', video.src);
+            // 隐藏加载状态
+            hideVideoLoading(video);
+        });
+        
+        // 添加播放状态监听
+        video.addEventListener('play', function() {
+            updatePlayButton(video.id, false);
+        });
+        
+        video.addEventListener('pause', function() {
+            updatePlayButton(video.id, true);
+        });
+        
+        // 移动端优化：确保视频在移动设备上正常播放
+        video.addEventListener('click', function() {
+            togglePlay(video.id);
+        });
+        
+        // 尝试自动加载视频
+        video.load();
+    });
+    
+    // 添加视频墙的平滑滚动
+    setupVideoWallNavigation();
+}
+
+/**
+ * 显示视频加载错误
+ */
+function showVideoError(video) {
+    const wrapper = video.closest('.video-wrapper');
+    if (wrapper) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'video-error';
+        errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 视频加载失败';
+        wrapper.appendChild(errorDiv);
+    }
+}
+
+/**
+ * 隐藏视频加载状态
+ */
+function hideVideoLoading(video) {
+    const wrapper = video.closest('.video-wrapper');
+    if (wrapper) {
+        const errorDiv = wrapper.querySelector('.video-error');
+        if (errorDiv) {
+            errorDiv.remove();
         }
-    } catch (error) {
-        console.error('加载照片出错:', error);
-        // 如果加载失败，保留默认照片
+    }
+}
+
+/**
+ * 切换视频播放/暂停
+ */
+function togglePlay(videoId) {
+    const video = document.getElementById(videoId);
+    if (video) {
+        if (video.paused) {
+            video.play().catch(error => {
+                console.error('视频播放失败:', error);
+                alert('视频播放失败，请检查视频文件是否存在');
+            });
+        } else {
+            video.pause();
+        }
+    }
+}
+
+/**
+ * 切换全屏
+ */
+function toggleFullscreen(videoId) {
+    const video = document.getElementById(videoId);
+    if (video) {
+        if (!document.fullscreenElement) {
+            video.requestFullscreen().catch(err => {
+                console.error('全屏失败:', err);
+                // 尝试使用兼容性方法
+                if (video.webkitRequestFullscreen) {
+                    video.webkitRequestFullscreen();
+                } else if (video.mozRequestFullScreen) {
+                    video.mozRequestFullScreen();
+                }
+            });
+        } else {
+            document.exitFullscreen();
+        }
+    }
+}
+
+/**
+ * 更新播放按钮状态
+ */
+function updatePlayButton(videoId, isPaused) {
+    const button = document.querySelector(`[onclick="togglePlay('${videoId}')"] i`);
+    if (button) {
+        if (isPaused) {
+            button.className = 'fas fa-play';
+        } else {
+            button.className = 'fas fa-pause';
+        }
+    }
+}
+
+/**
+ * 设置视频墙导航
+ */
+function setupVideoWallNavigation() {
+    const videoLink = document.querySelector('nav a[href="#videos"]');
+    const videoSection = document.getElementById('videos');
+    
+    if (videoLink && videoSection) {
+        videoLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // 移除所有活动状态
+            document.querySelectorAll('nav a').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // 添加当前活动状态
+            this.classList.add('active');
+            
+            // 平滑滚动到视频墙部分
+            videoSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        });
     }
 }

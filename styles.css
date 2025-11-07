@@ -99,6 +99,191 @@ main {
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
+/* 视频墙样式 */
+.video-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+    overflow-x: hidden;
+}
+
+.video-item {
+    background: #f8f9fa;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 100%;
+}
+
+.video-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 宽高比 */
+    height: 0;
+    background: #000;
+    overflow: hidden;
+}
+
+.video-item video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* 嵌入式视频样式 */
+.embedded-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+}
+
+/* 自定义视频控制按钮 - 保留用于其他视频 */
+.custom-controls {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.play-pause-btn,
+.fullscreen-btn {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+}
+
+.play-pause-btn:hover,
+.fullscreen-btn:hover {
+    background: rgba(102, 179, 255, 0.8);
+    transform: scale(1.1);
+}
+
+/* 确保原生控件显示 */
+video::-webkit-media-controls {
+    display: flex !important;
+    opacity: 1 !important;
+}
+
+video::-webkit-media-controls-panel {
+    display: flex !important;
+}
+
+/* 视频错误提示样式 */
+.video-error {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    z-index: 20;
+}
+
+.video-error i {
+    margin-right: 5px;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+    .video-wrapper {
+        padding-bottom: 56.25%; /* 保持16:9比例 */
+    }
+    
+    .custom-controls {
+        bottom: 5px;
+        right: 5px;
+    }
+    
+    .play-pause-btn,
+    .fullscreen-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+}
+
+.video-info {
+    padding: 1rem;
+}
+
+.video-info h3 {
+    color: #333;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.video-info p {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+/* 视频控制按钮样式 */
+video::-webkit-media-controls-panel {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls-fullscreen-button {
+    background-color: #66b3ff;
+    border-radius: 50%;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .video-container {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .video-item video {
+        height: 180px;
+    }
+    
+    nav ul {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    nav li {
+        margin: 0.25rem;
+    }
+    
+    nav a {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
 .section-title {
     text-align: center;
     margin-bottom: 2rem;
@@ -651,17 +836,6 @@ footer {
         padding: 6px 12px;
         font-size: 12px;
     }
-}
-
-/* 管理员入口链接样式 */
-.admin-link {
-    color: rgba(255, 255, 255, 0.3);
-    font-size: 12px;
-    transition: color 0.3s ease;
-}
-
-.admin-link:hover {
-    color: rgba(255, 255, 255, 0.6);
 }
 
 /* 响应式设计 */
