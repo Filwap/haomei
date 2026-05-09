@@ -27,10 +27,7 @@ export async function onRequest(context) {
   const path = url.pathname;
 
   try {
-    // 初始化数据库表（首次运行）
-    await initDB(env.DB);
-
-    // 路由分发
+    // 路由分发（数据库表已在 D1 控制台手动创建，无需重复初始化）
     if (path === '/api/login' && request.method === 'POST') {
       return handleLogin(request);
     }
@@ -43,43 +40,6 @@ export async function onRequest(context) {
   } catch (e) {
     return json({ error: e.message }, 500);
   }
-}
-
-// ── 数据库初始化 ───────────────────────────────────────
-async function initDB(db) {
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS anniversaries (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      date TEXT NOT NULL,
-      created_at TEXT DEFAULT (datetime('now'))
-    )
-  `);
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      content TEXT NOT NULL,
-      created_at TEXT DEFAULT (datetime('now'))
-    )
-  `);
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS photos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      url TEXT NOT NULL,
-      caption TEXT DEFAULT '',
-      created_at TEXT DEFAULT (datetime('now'))
-    )
-  `);
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS videos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      description TEXT DEFAULT '',
-      url TEXT NOT NULL,
-      created_at TEXT DEFAULT (datetime('now'))
-    )
-  `);
 }
 
 // ── 登录 ───────────────────────────────────────────────
