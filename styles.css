@@ -1451,6 +1451,8 @@ footer {
     inset: 0;
     cursor: pointer;
     animation: envelopeFloat 3s ease-in-out infinite;
+    will-change: transform;
+    backface-visibility: hidden;
 }
 
 /* 信封外层包装 */
@@ -1472,8 +1474,10 @@ footer {
     box-shadow:
         0 4px 18px rgba(192, 71, 92, 0.35),
         inset 0 0 24px rgba(255, 255, 255, 0.06);
-    transition: all 0.6s ease 0.12s;
+    transition: transform 0.6s ease 0.12s, opacity 0.6s ease 0.12s;
     opacity: 0.95;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 .letter-inside::before {
@@ -1497,6 +1501,8 @@ footer {
         0 -1px 0 rgba(200, 205, 215, 0.25) inset;
     overflow: hidden;
     z-index: 2;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 /* V形封口折痕线（SVG） */
@@ -1522,6 +1528,7 @@ footer {
     pointer-events: none;
     text-shadow: 0 1px 3px rgba(180, 60, 80, 0.18);
     transition: opacity 0.4s ease;
+    will-change: opacity;
 }
 
 .envelope.open .env-heart { opacity: 0; }
@@ -1541,6 +1548,8 @@ footer {
     transition: transform 0.85s cubic-bezier(0.68, -0.15, 0.32, 1.18), opacity 0.35s ease 0.15s;
     filter: drop-shadow(0 2px 4px rgba(160, 170, 190, 0.12));
     z-index: 5;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 /* 点击提示文字 */
@@ -1564,29 +1573,33 @@ footer {
 .envelope.open .env-flap {
     transform: translateX(-50%) rotateX(175deg);
     opacity: 0;
+    transition: transform 0.85s cubic-bezier(0.68, -0.15, 0.32, 1.18), opacity 0.35s ease 0.15s;
 }
 
 .envelope.open .env-front {
     transform: rotateX(-100deg);
     opacity: 0;
-    transition: all 0.55s cubic-bezier(0.55, 0, 0.95, 0.32) 0.08s;
+    transition: transform 0.55s cubic-bezier(0.55, 0, 0.95, 0.32) 0.08s, opacity 0.55s ease 0.08s;
     transform-origin: center bottom;
 }
 
 .envelope.open .letter-inside {
     transform: scale(0.9);
     opacity: 0;
+    transition: transform 0.6s ease 0.12s, opacity 0.6s ease 0.12s;
 }
 
 .envelope.open + .letter {
     opacity: 1;
     transform: translateY(0) scale(1);
     pointer-events: auto;
+    transition: transform 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) 0.38s, opacity 0.85s ease 0.38s;
 }
 
 .envelope.open {
     animation: none;
     pointer-events: none;
+    opacity: 0;
     transition: opacity 0.4s ease 0.28s;
 }
 
@@ -1600,8 +1613,10 @@ footer {
     opacity: 0;
     transform: translateY(30px) scale(0.93);
     pointer-events: none;
-    transition: all 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) 0.38s;
+    transition: transform 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) 0.38s, opacity 0.85s ease 0.38s;
     z-index: 6;
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 .letter-content {
