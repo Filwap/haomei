@@ -1388,6 +1388,38 @@ footer {
 }
 
 /* =====================================================
+   管理员入口
+   ===================================================== */
+.admin-entry {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 1.5rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(232, 99, 122, 0.15);
+    color: rgba(180, 100, 115, 0.4);
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    z-index: 400;
+    cursor: pointer;
+}
+
+.admin-entry:hover {
+    background: rgba(232, 99, 122, 0.12);
+    border-color: rgba(232, 99, 122, 0.4);
+    color: var(--rose);
+    transform: scale(1.1);
+    box-shadow: 0 4px 16px rgba(232, 99, 122, 0.2);
+}
+
+/* =====================================================
    欢迎弹窗
    ===================================================== */
 .modal-overlay {
