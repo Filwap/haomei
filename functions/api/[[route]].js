@@ -5,7 +5,7 @@
 
 // ── 管理员账号 ──────────────────────────────────────────
 const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'haomei2025';
+const ADMIN_PASS = '010403';
 const JWT_SECRET = 'haomei_secret_2025';
 
 // ── CORS 配置 ──────────────────────────────────────────

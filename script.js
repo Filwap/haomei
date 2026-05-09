@@ -5,7 +5,7 @@
 
 // ── 配置：部署 Worker 后修改此地址 ───────────────────────
 // 例如: https://haomei-api.你的用户名.workers.dev
-const API_BASE = 'https://haomei.cn.mt/api';
+const API_BASE = 'https://haomei.cn.mt';
 
 // ── 全局常量 ───────────────────────────────────────────
 const LOVE_START = new Date('2025-04-17');
