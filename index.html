@@ -13,16 +13,38 @@
 </head>
 <body>
 
-    <!-- 欢迎弹窗 -->
+    <!-- 欢迎弹窗 - 信封动画 -->
     <div class="modal-overlay" id="welcome-overlay"></div>
     <div class="welcome-modal" id="welcome-modal">
-        <div class="modal-deco"></div>
-        <div class="modal-hearts">
-            <span>♡</span><span>♡</span><span>♡</span>
+        <!-- 阶段1: 信封 -->
+        <div class="envelope" id="envelope">
+            <div class="env-wrap">
+                <!-- 内层粉色信纸 -->
+                <div class="letter-inside" id="letter-inside"></div>
+                <!-- 信封正面（带V形折线） -->
+                <div class="env-front">
+                    <!-- V形封口折痕 -->
+                    <svg class="env-v-svg" viewBox="0 0 420 280" preserveAspectRatio="none">
+                        <polyline points="0,0 210,140 420,0" fill="none" stroke="#d4d8e0" stroke-width="2"/>
+                    </svg>
+                    <!-- 中间小爱心 -->
+                    <span class="env-heart">♥</span>
+                </div>
+                <!-- 翻转的顶部封盖 -->
+                <div class="env-flap" id="envelope-flap"></div>
+            </div>
+            <span class="envelope-hint"><i class="fas fa-hand-pointer"></i> 点击打开</span>
         </div>
-        <h2>欢迎回到我们的小世界</h2>
-        <p>这里珍藏着我们每一个美好的瞬间<br>每一段回忆，都是爱最温柔的见证</p>
-        <button id="close-welcome">进入我们的世界 ♡</button>
+        <!-- 阶段2: 展开的信纸内容 -->
+        <div class="letter" id="letter">
+            <div class="letter-content">
+                <div class="letter-deco-top"><span>✦</span><span>✦</span><span>✦</span></div>
+                <h2>欢迎来到我们的小世界</h2>
+                <p class="letter-text">这里珍藏着我们每一个美好的瞬间<br>每一段回忆，都是爱最温柔的见证💗</p>
+                <button id="close-welcome">点击进入 ♡</button>
+                <div class="letter-deco-bottom">— 小浩 & 小梅 —</div>
+            </div>
+        </div>
     </div>
 
     <!-- 背景音乐 -->
@@ -177,11 +199,6 @@
                 <!-- 纪念日卡片动态生成 -->
             </div>
 
-            <div class="add-date-panel">
-                <a href="admin.html" class="btn-manage" style="display:inline-block;text-decoration:none;">
-                    <i class="fas fa-cog"></i> 前往后台管理
-                </a>
-            </div>
         </section>
 
         <!-- ===== 照片墙 ===== -->

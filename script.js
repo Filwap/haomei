@@ -597,7 +597,7 @@ function initMouseEffects() {
         el.textContent = texts[idx % texts.length];
         idx++;
 
-        var colors = ['#e8637a', '#f2a0b0', '#c0475c', '#ff9eb5', '#ff6b9d'];
+        var colors = ['#e8637a', '#f2a0b0', '#c0475c', '#f7c5cd', '#e08090'];
         el.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;color:${colors[Math.floor(Math.random()*colors.length)]};font-size:15px;opacity:1;transform:translate(-50%,-50%);pointer-events:none;z-index:9999;font-family:Noto Serif SC,serif;font-weight:600;white-space:nowrap;transition:all 1.2s ease-out;`;
 
         document.body.appendChild(el);
@@ -617,7 +617,7 @@ function initMouseEffects() {
         if (e.target.closest('.welcome-modal') || e.target.closest('.modal-overlay')) return;
 
         var hearts = ['♡', '♥', '❤', '✿', '❋'];
-        var colors = ['#e8637a', '#f2a0b0', '#ffb3c6', '#ffd6e0', '#c0475c'];
+        var colors = ['#e8637a', '#f2a0b0', '#f7c5cd', '#fdd4dc', '#c0475c'];
         var h = document.createElement('span');
         h.className = 'heart-particle';
         h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
@@ -638,24 +638,57 @@ function initBackTop() {
 }
 
 // =====================================================
-// 欢迎弹窗
+// 欢迎弹窗 - 信封动画
 // =====================================================
 function showWelcomeModal() {
     var modal = document.getElementById('welcome-modal');
     var overlay = document.getElementById('welcome-overlay');
+    var envelope = document.getElementById('envelope');
     var closeBtn = document.getElementById('close-welcome');
-    if (!modal || !overlay || !closeBtn) return;
+    if (!modal || !overlay || !envelope || !closeBtn) return;
 
-    setTimeout(() => {
+    // 弹窗入场（带缩放弹性）
+    setTimeout(function() {
         modal.style.display = 'block';
         overlay.style.display = 'block';
+        modal.style.opacity = '0';
+        modal.style.transform = 'translate(-50%, -50%) scale(0.88)';
+        overlay.style.opacity = '0';
+        requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+                modal.style.transition = 'opacity 0.55s ease, transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                overlay.style.transition = 'opacity 0.5s ease';
+                modal.style.opacity = '1';
+                modal.style.transform = 'translate(-50%, -50%) scale(1)';
+                overlay.style.opacity = '1';
+            });
+        });
     }, 600);
 
-    const close = () => {
-        modal.style.display = 'none';
-        overlay.style.display = 'none';
-        // 弹窗关闭后加载视频（避免影响首屏性能）
-        loadVideosFromCloud();
+    // 点击信封 → 打开（封盖翻转 + 信纸跳出）
+    envelope.addEventListener('click', function openEnvelope() {
+        if (envelope.classList.contains('open')) return;
+        envelope.classList.add('open');
+        // 隐藏提示文字
+        var hint = envelope.querySelector('.envelope-hint');
+        if (hint) hint.style.opacity = '0';
+    });
+
+    // 点击"进入"按钮 → 关闭弹窗
+    const close = function() {
+        modal.style.transition = 'opacity 0.45s ease, transform 0.45s cubic-bezier(0.55, 0, 0.2, 1)';
+        modal.style.opacity = '0';
+        modal.style.transform = 'translate(-50%, -50%) scale(0.92) translateY(-10px)';
+        overlay.style.transition = 'opacity 0.4s ease';
+        overlay.style.opacity = '0';
+        setTimeout(function() {
+            modal.style.display = 'none';
+            overlay.style.display = 'none';
+            modal.style.transition = '';
+            modal.style.transform = '';
+            overlay.style.transition = '';
+            loadVideosFromCloud();
+        }, 480);
     };
 
     closeBtn.addEventListener('click', close);

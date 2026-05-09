@@ -1,6 +1,6 @@
 /* =====================================================
    情侣纪念网站 · 全新设计
-   色调：玫瑰粉 + 柔雾白 + 深枣红
+   色调：玫瑰粉 + 柔云白 + 深玫红
    字体：Noto Serif SC（标题） + Noto Sans SC（正文）
    ===================================================== */
 
@@ -20,9 +20,9 @@
     --muted: #7a5c62;
     --subtle: #b89098;
 
-    --shadow-sm: 0 2px 12px rgba(200, 80, 100, 0.08);
-    --shadow-md: 0 8px 32px rgba(200, 80, 100, 0.12);
-    --shadow-lg: 0 20px 60px rgba(200, 80, 100, 0.18);
+    --shadow-sm: 0 2px 12px rgba(232, 99, 122, 0.08);
+    --shadow-md: 0 8px 32px rgba(232, 99, 122, 0.12);
+    --shadow-lg: 0 20px 60px rgba(232, 99, 122, 0.18);
 
     --radius: 16px;
     --radius-sm: 8px;
@@ -193,9 +193,9 @@ ul { list-style: none; }
     inset: 0;
     background: linear-gradient(
         160deg,
-        rgba(42, 10, 20, 0.55) 0%,
+        rgba(42, 26, 30, 0.55) 0%,
         rgba(192, 71, 92, 0.35) 60%,
-        rgba(42, 10, 20, 0.65) 100%
+        rgba(42, 26, 30, 0.65) 100%
     );
 }
 
@@ -873,8 +873,8 @@ ul { list-style: none; }
     inset: 0;
     background: linear-gradient(
         to top,
-        rgba(42, 10, 20, 0.75) 0%,
-        rgba(42, 10, 20, 0.1) 50%,
+        rgba(10, 26, 42, 0.75) 0%,
+        rgba(10, 26, 42, 0.1) 50%,
         transparent 100%
     );
     display: flex;
@@ -920,7 +920,7 @@ ul { list-style: none; }
     position: fixed;
     inset: 0;
     z-index: 900;
-    background: rgba(20, 5, 10, 0.95);
+    background: rgba(10, 20, 30, 0.95);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1400,7 +1400,7 @@ footer {
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(6px);
     border: 1px solid rgba(232, 99, 122, 0.15);
-    color: rgba(180, 100, 115, 0.4);
+    color: rgba(100, 140, 170, 0.4);
     font-size: 0.75rem;
     display: flex;
     align-items: center;
@@ -1420,16 +1420,17 @@ footer {
 }
 
 /* =====================================================
-   欢迎弹窗
+   欢迎弹窗 - 标准信封动画
+   干净的白色标准信封 + V形折线 + 顶部翻折封盖
+   点击打开 → 封盖翻转 → 信纸弹出
    ===================================================== */
 .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(20, 5, 10, 0.7);
-    backdrop-filter: blur(4px);
+    background: rgba(10, 20, 30, 0.5);
+    backdrop-filter: blur(8px);
     z-index: 800;
-    animation: fadeIn 0.3s ease;
 }
 
 .welcome-modal {
@@ -1438,64 +1439,272 @@ footer {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: var(--white);
-    border-radius: 24px;
-    padding: 3rem 2.5rem;
+    width: min(560px, 90vw);
+    height: 440px;
     z-index: 801;
-    text-align: center;
-    width: min(480px, 90vw);
-    box-shadow: 0 24px 80px rgba(20, 5, 10, 0.3);
-    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    perspective: 1200px;
 }
 
-.modal-deco {
+/* ── 阶段1: 信封容器 ── */
+.envelope {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    animation: envelopeFloat 3s ease-in-out infinite;
+}
+
+/* 信封外层包装 */
+.env-wrap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -48%);
+    width: 420px;
+    height: 280px;
+}
+
+/* ===== 内层粉色信纸（微微露出边缘） ===== */
+.letter-inside {
+    position: absolute;
+    inset: 6px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--rose), var(--rose-dark), #b03a48);
+    box-shadow:
+        0 4px 18px rgba(192, 71, 92, 0.35),
+        inset 0 0 24px rgba(255, 255, 255, 0.06);
+    transition: all 0.6s ease 0.12s;
+    opacity: 0.95;
+}
+
+.letter-inside::before {
+    content: '';
+    position: absolute;
+    top: 10px; left: 10px; right: 10px; bottom: 10px;
+    border: 1.5px solid rgba(255, 255, 255, 0.13);
+    border-radius: 4px;
+}
+
+/* ===== 信封正面（白色矩形） ===== */
+.env-front {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(155deg, #ffffff 0%, #f8f9fb 40%, #f2f3f7 100%);
+    border-radius: 10px;
+    box-shadow:
+        0 8px 30px rgba(60, 70, 90, 0.14),
+        0 2px 8px rgba(60, 70, 90, 0.06),
+        0 1px 0 rgba(255, 255, 255, 0.9) inset,
+        0 -1px 0 rgba(200, 205, 215, 0.25) inset;
+    overflow: hidden;
+    z-index: 2;
+}
+
+/* V形封口折痕线（SVG） */
+.env-v-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+/* 信封中央小爱心 */
+.env-heart {
+    position: absolute;
+    top: 48%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: #d94a5c;
+    opacity: 1;
+    z-index: 3;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(180, 60, 80, 0.18);
+    transition: opacity 0.4s ease;
+}
+
+.envelope.open .env-heart { opacity: 0; }
+
+/* ===== 顶部翻转封盖 ===== */
+.env-flap {
+    position: absolute;
+    top: -3px;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-left: 215px solid transparent;
+    border-right: 215px solid transparent;
+    border-top-color: #eceef3;
+    transform-origin: top center;
+    transform: translateX(-50%);
+    transition: transform 0.85s cubic-bezier(0.68, -0.15, 0.32, 1.18), opacity 0.35s ease 0.15s;
+    filter: drop-shadow(0 2px 4px rgba(160, 170, 190, 0.12));
+    z-index: 5;
+}
+
+/* 点击提示文字 */
+.envelope-hint {
+    position: absolute;
+    bottom: -44px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.84rem;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    animation: hintBounce 2s ease-in-out infinite;
+    transition: opacity 0.35s ease;
+    z-index: 10;
+}
+
+.envelope-hint i { margin-right: 5px; font-size: 0.78rem; }
+
+/* ── 信封打开状态 ── */
+.envelope.open .env-flap {
+    transform: translateX(-50%) rotateX(175deg);
+    opacity: 0;
+}
+
+.envelope.open .env-front {
+    transform: rotateX(-100deg);
+    opacity: 0;
+    transition: all 0.55s cubic-bezier(0.55, 0, 0.95, 0.32) 0.08s;
+    transform-origin: center bottom;
+}
+
+.envelope.open .letter-inside {
+    transform: scale(0.9);
+    opacity: 0;
+}
+
+.envelope.open + .letter {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.envelope.open {
+    animation: none;
+    pointer-events: none;
+    transition: opacity 0.4s ease 0.28s;
+}
+
+/* ── 阶段2: 展开的信纸 ── */
+.letter {
+    position: absolute;
+    inset: -45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: translateY(30px) scale(0.93);
+    pointer-events: none;
+    transition: all 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) 0.38s;
+    z-index: 6;
+}
+
+.letter-content {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 2.8rem 2.2rem 2.2rem;
+    text-align: center;
+    box-shadow:
+        0 28px 90px rgba(10, 20, 30, 0.2),
+        0 10px 40px rgba(232, 99, 122, 0.14),
+        0 0 0 1px rgba(232, 99, 122, 0.06);
+    max-width: 360px;
+    width: calc(100% - 60px);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 信纸顶部装饰条 */
+.letter-content::before {
+    content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 6px;
-    background: linear-gradient(90deg, var(--rose), var(--blush), var(--rose));
-    border-radius: 24px 24px 0 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--rose-light), var(--rose), var(--blush));
 }
 
-.modal-hearts {
-    font-size: 1.3rem;
+/* 信纸左侧竖线装饰 */
+.letter-content::after {
+    content: '';
+    position: absolute;
+    top: 16px;
+    bottom: 16px;
+    left: 16px;
+    width: 2px;
+    background: repeating-linear-gradient(
+        to bottom,
+        var(--rose-light) 0px,
+        var(--rose-light) 8px,
+        transparent 8px,
+        transparent 16px
+    );
+    border-radius: 1px;
+    opacity: 0.4;
+}
+
+.letter-deco-top {
+    font-size: 0.65rem;
     color: var(--rose-light);
-    letter-spacing: 0.3rem;
+    letter-spacing: 0.7em;
     margin-bottom: 1.2rem;
+    opacity: 0.7;
 }
 
-.welcome-modal h2 {
+.letter-deco-bottom {
+    margin-top: 1.4rem;
+    font-size: 0.78rem;
+    color: var(--subtle);
+    letter-spacing: 0.14em;
+    opacity: 0.55;
+}
+
+.letter h2 {
     font-family: var(--serif);
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     color: var(--ink);
-    margin-bottom: 0.8rem;
+    margin-bottom: 1rem;
+    line-height: 1.4;
+    position: relative;
 }
 
-.welcome-modal p {
-    font-size: 0.9rem;
+.letter-text {
+    font-size: 0.93rem;
     color: var(--muted);
-    line-height: 1.9;
+    line-height: 2;
     margin-bottom: 2rem;
+    position: relative;
 }
 
-.welcome-modal button {
-    padding: 0.8rem 2.5rem;
+.letter button {
+    padding: 0.8rem 2.6rem;
     background: linear-gradient(135deg, var(--rose), var(--rose-dark));
     color: white;
     border: none;
     border-radius: var(--radius-pill);
-    font-size: 0.95rem;
+    font-size: 0.94rem;
     font-family: var(--sans);
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba(232, 99, 122, 0.35);
-    transition: all var(--transition);
-    letter-spacing: 0.06em;
+    box-shadow: 0 5px 22px rgba(232, 99, 122, 0.38);
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    letter-spacing: 0.07em;
+    position: relative;
+    overflow: hidden;
 }
 
-.welcome-modal button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(232, 99, 122, 0.45);
+.letter button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 34px rgba(232, 99, 122, 0.48);
+}
+
+.letter button:active {
+    transform: translateY(-1px);
 }
 
 /* =====================================================
@@ -1506,7 +1715,7 @@ footer {
     bottom: 2rem;
     left: 50%;
     transform: translateX(-50%) translateY(20px);
-    background: rgba(42, 26, 30, 0.92);
+    background: rgba(10, 26, 30, 0.92);
     color: white;
     padding: 0.75rem 1.5rem;
     border-radius: var(--radius-pill);
@@ -1593,6 +1802,28 @@ footer {
 @keyframes modalSlideIn {
     from { opacity: 0; transform: translate(-50%, -60%); }
     to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+@keyframes envelopeFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+}
+
+@keyframes glowPulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+@keyframes hintBounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-4px); }
+}
+
+@keyframes sealHeartBeat {
+    0%, 100% { transform: scale(1); }
+    15% { transform: scale(1.12); }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.08); }
 }
 
 @keyframes particleFloat {
