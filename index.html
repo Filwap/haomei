@@ -61,7 +61,7 @@
     <header id="hero">
         <div class="hero-bg">
             <div class="hero-overlay"></div>
-            <img src="photos/c.jpg" class="hero-img" alt="封面">
+            <img src="photos/c.jpg" class="hero-img" alt="封面" loading="lazy">
         </div>
         <div class="hero-content">
             <div class="hero-badge">我们在一起</div>
@@ -178,23 +178,9 @@
             </div>
 
             <div class="add-date-panel">
-                <div class="add-date-icon"><i class="fas fa-plus-circle"></i></div>
-                <h3>添加新的纪念日</h3>
-                <form id="add-date-form" class="add-date-form">
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label>纪念日名称</label>
-                            <input type="text" name="name" placeholder="例如：初次约会" required>
-                        </div>
-                        <div class="form-field">
-                            <label>纪念日期</label>
-                            <input type="date" name="date" required>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary">
-                        <i class="fas fa-heart"></i> 添加纪念日
-                    </button>
-                </form>
+                <a href="admin.html" class="btn-manage" style="display:inline-block;text-decoration:none;">
+                    <i class="fas fa-cog"></i> 前往后台管理
+                </a>
             </div>
         </section>
 

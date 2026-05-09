@@ -233,36 +233,7 @@ function addDateCard(name, date, cloudId) {
         '<div class="countdown" data-date="' + date + '">' +
         '<span class="days">0</span>' +
         '<span class="days-ago"></span>' +
-        '</div>' +
-        '<button class="delete-date-btn" title="删除纪念日"><i class="fas fa-times"></i></button>';
-
-    card.querySelector('.delete-date-btn').addEventListener('click', async function() {
-        if (!confirm('确定删除这个纪念日吗？')) return;
-
-        const token = localStorage.getItem('hm_admin_token') || '';
-        if (!token) {
-            showToast('<i class="fas fa-lock"></i> 请先登录管理后台再操作');
-            return;
-        }
-
-        if (cloudId || card.dataset.cloudId) {
-            const id = cloudId || card.dataset.cloudId;
-            try {
-                await fetch(`${API_BASE}/api/anniversaries/${id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-            } catch (err) {}
-        }
-
-        card.style.transition = 'all 0.35s ease';
-        card.style.opacity = '0';
-        card.style.transform = 'scale(0.85)';
-        setTimeout(() => {
-            card.remove();
-            showToast('<i class="fas fa-trash-alt"></i> 纪念日已删除');
-        }, 350);
-    });
+        '</div>';
 
     container.appendChild(card);
     requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('visible')));
