@@ -1,0 +1,16 @@
+﻿name = "haomei-api"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# ── D1 数据库绑定 ──────────────────────────────────────
+# 创建 D1 数据库后，把 database_id 替换为你自己的 ID
+[[d1_databases]]
+binding = "DB"
+database_name = "haomei-db"
+database_id = "d027ab17-09c4-419e-b554-375c8f2227d6"
+
+# ── 路由配置（可选：将 API 挂载到子域名） ───────────────
+# 如果你想让 API 跑在 api.haomei.cc.cd，取消下面注释
+# [[routes]]
+# pattern = "api.haomei.cc.cd/*"
+# zone_name = "haomei.cc.cd"

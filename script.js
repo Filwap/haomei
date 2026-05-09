@@ -1,808 +1,721 @@
-document.addEventListener('DOMContentLoaded', function() {
-    // 设置恋爱开始日期（示例日期，需要修改为实际日期）
-    const loveStartDate = new Date('2025-04-17');
+﻿/* =====================================================
+   情侣纪念网站 · 全功能 JS（云端版）
+   数据存储: Cloudflare Worker API + D1 数据库
+   ===================================================== */
 
-    // 初始化背景音乐
-    initBackgroundMusic();
-    
-    // 加载已保存的纪念日
-    loadAnniversaries();
-    
-    // 加载已保存的留言
-    loadMessages();
-    
-    // 计算恋爱天数
-    calculateDaysTogether(loveStartDate);
-    
-    // 计算所有纪念日倒计时
-    calculateAllCountdowns();
-    
-    // 设置导航栏平滑滚动
-    setupSmoothScrolling();
-    
-    // 设置表单提交事件
-    setupFormSubmissions();
-    
-    // 初始化视频墙
-    initVideoWall();
-    
-    // 每天更新一次天数
-    setInterval(() => calculateDaysTogether(loveStartDate), 86400000); // 24小时 = 86400000毫秒
-    
-    // 每小时更新一次倒计时
-    setInterval(calculateAllCountdowns, 3600000); // 1小时 = 3600000毫秒
+// ── 配置：部署 Worker 后修改此地址 ───────────────────────
+// 例如: https://haomei-api.你的用户名.workers.dev
+const API_BASE = 'https://haomei-api.lxbtip-ddnscom.workers.dev';
+
+// ── 全局常量 ───────────────────────────────────────────
+const LOVE_START = new Date('2025-04-17');
+
+// ── DOMContentLoaded ──────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    initNav();
+    initHero();
+    initMusic();
+    initDaysCounter();
+    initAnniversaries();
+    initGallery();
+    initMessages();
+    initScrollAnimations();
+    initMouseEffects();
+    initBackTop();
+    showWelcomeModal();
 });
 
-/**
- * 计算恋爱天数并显示在页面上
- * @param {Date} startDate - 恋爱开始的日期
- */
-function calculateDaysTogether(startDate) {
-    const today = new Date();
-    const timeDiff = today - startDate;
-    const daysTogether = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
-    
-    // 更新页面上的天数显示
-    document.getElementById('days-count').textContent = daysTogether;
-    document.getElementById('footer-days').textContent = daysTogether;
-}
+// =====================================================
+// 导航栏
+// =====================================================
+function initNav() {
+    const nav = document.getElementById('mainNav');
+    const toggle = document.getElementById('navToggle');
+    const links = document.querySelector('.nav-links');
+    const navAnchors = document.querySelectorAll('.nav-links a');
 
-/**
- * 计算所有纪念日的倒计时
- */
-function calculateAllCountdowns() {
-    const countdownElements = document.querySelectorAll('.countdown');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // 重置时间为当天0点
-    
-    countdownElements.forEach(element => {
-        const dateStr = element.getAttribute('data-date');
-        if (!dateStr) return;
-        
-        const originalDate = new Date(dateStr);
-        
-        // 计算今年的纪念日
-        const thisYearDate = new Date(dateStr);
-        thisYearDate.setFullYear(today.getFullYear());
-        
-        // 如果今年的纪念日已经过去，计算明年的
-        if (thisYearDate < today) {
-            thisYearDate.setFullYear(today.getFullYear() + 1);
-        }
-        
-        // 计算天数差异
-        const timeDiff = thisYearDate - today;
-        const daysLeft = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-        
-        // 更新倒计时显示
-        const daysElement = element.querySelector('.days');
-        if (daysElement) {
-            daysElement.textContent = daysLeft;
-        }
+    const onScroll = () => {
+        nav.classList.toggle('scrolled', window.scrollY > 60);
+        updateActiveNav();
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+
+    toggle && toggle.addEventListener('click', () => {
+        links.classList.toggle('open');
     });
-}
 
-/**
- * 设置导航栏平滑滚动
- */
-function setupSmoothScrolling() {
-    const navLinks = document.querySelectorAll('nav a');
-    
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
+    navAnchors.forEach(a => {
+        a.addEventListener('click', e => {
             e.preventDefault();
-            
-            // 获取目标部分的ID
-            const targetId = this.getAttribute('href');
-            const targetSection = document.querySelector(targetId);
-            
-            if (targetSection) {
-                // 平滑滚动到目标部分
-                window.scrollTo({
-                    top: targetSection.offsetTop - 60, // 减去导航栏高度
-                    behavior: 'smooth'
-                });
-                
-                // 更新活动链接
-                navLinks.forEach(link => link.classList.remove('active'));
-                this.classList.add('active');
+            const id = a.getAttribute('href');
+            const target = document.querySelector(id);
+            if (target) {
+                window.scrollTo({ top: target.offsetTop - 64, behavior: 'smooth' });
             }
-        });
-    });
-    
-    // 滚动时更新活动链接
-    window.addEventListener('scroll', function() {
-        const scrollPosition = window.scrollY;
-        
-        document.querySelectorAll('.section').forEach(section => {
-            const sectionTop = section.offsetTop - 100;
-            const sectionBottom = sectionTop + section.offsetHeight;
-            
-            if (scrollPosition >= sectionTop && scrollPosition < sectionBottom) {
-                const currentId = section.getAttribute('id');
-                
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${currentId}`) {
-                        link.classList.add('active');
-                    }
-                });
-            }
+            links.classList.remove('open');
         });
     });
 }
 
-/**
- * 设置表单提交事件
- */
-function setupFormSubmissions() {
-    // 添加纪念日表单
-    const addDateForm = document.getElementById('add-date-form');
-    if (addDateForm) {
-        addDateForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const nameInput = this.querySelector('input[type="text"]');
-            const dateInput = this.querySelector('input[type="date"]');
-            
-            if (nameInput && dateInput && nameInput.value && dateInput.value) {
-                // 创建新的纪念日卡片
-                addNewDateCard(nameInput.value, dateInput.value, true);
-                
-                // 显示成功提示
-                alert('纪念日添加成功！');
-                
-                // 重置表单
-                this.reset();
-            }
-        });
-    }
-    
-    // 留言板表单
-    const messageForm = document.getElementById('message-form');
-    if (messageForm) {
-        messageForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const nameInput = this.querySelector('input[type="text"]');
-            const messageInput = this.querySelector('textarea');
-            
-            if (nameInput && messageInput && nameInput.value && messageInput.value) {
-                // 添加新留言
-                addNewMessage(nameInput.value, messageInput.value);
-                
-                // 重置表单
-                this.reset();
-            } else {
-                alert('请填写完整的姓名和留言内容！');
-            }
-        });
-    }
-}
+function updateActiveNav() {
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+    const scrollY = window.scrollY;
 
-// 保存纪念日到localStorage
-function saveAnniversaries() {
-    const anniversaries = [];
-    document.querySelectorAll('.date-card').forEach(card => {
-        anniversaries.push({
-            name: card.querySelector('h3').textContent,
-            date: card.querySelector('.countdown').getAttribute('data-date')
-        });
-    });
-    localStorage.setItem('anniversaries', JSON.stringify(anniversaries));
-}
-
-// 加载保存的纪念日
-function loadAnniversaries() {
-    const saved = localStorage.getItem('anniversaries');
-    if (saved) {
-        const anniversaries = JSON.parse(saved);
-        anniversaries.forEach(item => {
-            addNewDateCard(item.name, item.date, false);
-        });
-    }
-}
-
-/**
- * 添加新的纪念日卡片
- * @param {string} name - 纪念日名称
- * @param {string} date - 纪念日日期
- * @param {boolean} [shouldSave=true] - 是否需要保存到localStorage
- */
-function addNewDateCard(name, date, shouldSave = true) {
-    const anniversaryContainer = document.querySelector('.anniversary');
-    if (!anniversaryContainer) return;
-    
-    // 创建新的日期卡片
-    const dateCard = document.createElement('div');
-    dateCard.className = 'date-card';
-    
-    // 格式化日期为可读格式
-    const formattedDate = new Date(date).toLocaleDateString('zh-CN');
-    
-    // 设置卡片内容
-    dateCard.innerHTML = `
-        <h3>${name}</h3>
-        <div class="date">${formattedDate}</div>
-        <div class="countdown" data-date="${date}">
-            <span class="days">0</span> 天
-        </div>
-        <button class="delete-date-btn">删除</button>
-    `;
-    
-    // 添加删除事件
-    dateCard.querySelector('.delete-date-btn').addEventListener('click', function(e) {
-        e.stopPropagation(); // 防止事件冒泡
-        if (confirm('确定要删除这个纪念日吗？')) {
-            dateCard.style.transition = 'all 0.3s ease';
-            dateCard.style.opacity = '0';
-            dateCard.style.transform = 'translateX(100px)';
-            
-            setTimeout(() => {
-                dateCard.remove();
-                saveAnniversaries();
-                calculateAllCountdowns();
-                // 使用更优雅的通知方式
-                const notification = document.createElement('div');
-                notification.className = 'save-notification';
-                notification.textContent = '纪念日已删除！';
-                document.body.appendChild(notification);
-                setTimeout(() => notification.remove(), 2000);
-            }, 300);
-        }
-    });
-    
-    // 添加到容器
-    anniversaryContainer.appendChild(dateCard);
-    
-    // 更新倒计时
-    calculateAllCountdowns();
-    
-    // 保存到localStorage
-    if (shouldSave) {
-        saveAnniversaries();
-    }
-}
-
-/**
- * 添加新留言
- * @param {string} name - 留言者姓名
- * @param {string} message - 留言内容
- */
-// 保存留言到localStorage
-function saveMessages() {
-    try {
-        const messages = [];
-        document.querySelectorAll('.message').forEach(msg => {
-            messages.push({
-                name: msg.querySelector('.name').textContent,
-                date: msg.querySelector('.date').textContent,
-                content: msg.querySelector('p').textContent
+    sections.forEach(section => {
+        const top = section.offsetTop - 80;
+        const bottom = top + section.offsetHeight;
+        if (scrollY >= top && scrollY < bottom) {
+            navLinks.forEach(a => {
+                a.classList.toggle('active', a.getAttribute('href') === '#' + section.id);
             });
-        });
-        localStorage.setItem('loveMessages', JSON.stringify(messages));
-        console.log('留言保存成功:', messages);
-        return true;
-    } catch (error) {
-        console.error('保存留言失败:', error);
-        alert('保存留言失败，请重试！');
-        return false;
-    }
-}
-
-// 加载保存的留言
-function loadMessages() {
-    const savedMessages = localStorage.getItem('loveMessages');
-    if (savedMessages) {
-        const messages = JSON.parse(savedMessages);
-        const messageWall = document.querySelector('.message-wall');
-        
-        messages.reverse().forEach(msg => {
-            const messageElement = document.createElement('div');
-            messageElement.className = 'message';
-            messageElement.innerHTML = `
-                <div class="message-header">
-                    <span class="name">${msg.name}</span>
-                    <span class="date">${msg.date}</span>
-                </div>
-                <p>${msg.content}</p>
-                <button class="delete-btn">删除</button>
-            `;
-            messageWall.appendChild(messageElement);
-        });
-    }
-}
-
-function addNewMessage(name, message) {
-    const messageWall = document.querySelector('.message-wall');
-    if (!messageWall) return;
-    
-    // 创建新留言元素
-    const messageElement = document.createElement('div');
-    messageElement.className = 'message';
-    
-    // 获取当前日期
-    const currentDate = new Date().toLocaleDateString('zh-CN');
-    
-    // 设置留言内容
-    messageElement.innerHTML = `
-        <div class="message-header">
-            <span class="name">${name}</span>
-            <span class="date">${currentDate}</span>
-        </div>
-        <p>${message}</p>
-        <button class="delete-btn">删除</button>
-    `;
-    
-    // 添加删除事件监听器
-    messageElement.querySelector('.delete-btn').addEventListener('click', function() {
-        if (confirm('确定要删除这条留言吗？')) {
-            messageElement.style.transition = 'all 0.3s ease';
-            messageElement.style.opacity = '0';
-            messageElement.style.transform = 'translateX(100px)';
-            
-            setTimeout(() => {
-                messageElement.remove();
-                saveMessages();
-                // 显示删除成功提示
-                const notification = document.createElement('div');
-                notification.className = 'save-notification';
-                notification.textContent = '留言已删除！';
-                document.body.appendChild(notification);
-                setTimeout(() => notification.remove(), 2000);
-            }, 300);
         }
     });
-    
-    // 添加到留言墙的顶部
-    messageWall.insertBefore(messageElement, messageWall.firstChild);
-    
-    // 保存留言并显示保存成功提示
-    if (saveMessages()) {
-        const notification = document.createElement('div');
-        notification.className = 'save-notification';
-        notification.textContent = '留言已保存！';
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 2000);
-    }
 }
 
-// 优化后的删除功能
-document.querySelector('.message-wall').addEventListener('click', function(e) {
-    if (e.target.classList.contains('delete-btn')) {
-        const message = e.target.closest('.message');
-        if (confirm('确定要删除这条留言吗？')) {
-            message.style.transition = 'all 0.3s ease';
-            message.style.opacity = '0';
-            message.style.transform = 'translateX(100px)';
-            
-            setTimeout(() => {
-                message.remove();
-                saveMessages();
-            }, 300);
-        }
-    }
-});
-
-// 保存数据到服务器
-async function saveToServer(endpoint, data) {
-    try {
-        const response = await fetch(`http://127.0.0.1:8888/www/wwwroot/haomei_fun${endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
+// =====================================================
+// Hero
+// =====================================================
+function initHero() {
+    const heroBtn = document.querySelector('.hero-btn');
+    if (heroBtn) {
+        heroBtn.addEventListener('click', e => {
+            e.preventDefault();
+            const home = document.getElementById('home');
+            if (home) window.scrollTo({ top: home.offsetTop - 64, behavior: 'smooth' });
         });
-        
-        if (!response.ok) {
-            throw new Error('保存失败');
-        }
-        return await response.json();
-    } catch (error) {
-        console.error('保存错误:', error);
-        alert('保存失败，请检查网络连接');
-        throw error;
+    }
+    const navLogo = document.querySelector('.nav-logo');
+    if (navLogo) {
+        navLogo.addEventListener('click', e => {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
     }
 }
 
-// 可靠滚动到顶部函数
-function scrollToTop() {
-    const scrollStep = -window.scrollY / (500 / 15);
-    const scrollInterval = setInterval(() => {
-        if (window.scrollY !== 0) {
-            window.scrollBy(0, scrollStep);
+// =====================================================
+// 恋爱天数
+// =====================================================
+function initDaysCounter() {
+    const calcDays = () => {
+        const diff = Math.floor((Date.now() - LOVE_START.getTime()) / 86400000);
+        document.querySelectorAll('#days-count, #days-count-2, #footer-days')
+            .forEach(el => { if (el) el.textContent = diff; });
+    };
+    calcDays();
+    setInterval(calcDays, 60000);
+}
+
+// =====================================================
+// 背景音乐
+// =====================================================
+function initMusic() {
+    const audio = document.getElementById('bgMusic');
+    const ctrl = document.getElementById('musicControl');
+    if (!audio || !ctrl) return;
+
+    const disc = ctrl.querySelector('.music-disc');
+
+    disc.addEventListener('click', () => {
+        if (audio.paused) {
+            audio.play().then(() => ctrl.classList.add('playing')).catch(() => {});
         } else {
-            clearInterval(scrollInterval);
-        }
-    }, 15);
-}
-
-// 确保各种情况下都能滚动到顶部
-document.addEventListener('DOMContentLoaded', function() {
-    scrollToTop();
-    setTimeout(scrollToTop, 100);
-});
-
-// 页面完全加载后再次确保
-window.addEventListener('load', function() {
-    scrollToTop();
-    setTimeout(scrollToTop, 300);
-    setTimeout(scrollToTop, 1000);
-    
-    // 原有欢迎弹窗代码
-    setTimeout(() => {
-        const welcomeModal = document.getElementById('welcome-modal');
-        const welcomeOverlay = document.getElementById('welcome-overlay');
-        const closeWelcome = document.getElementById('close-welcome');
-        
-        // 显示弹窗
-        welcomeModal.style.display = 'block';
-        welcomeOverlay.style.display = 'block';
-        
-        // 关闭弹窗
-        closeWelcome.addEventListener('click', function() {
-            welcomeModal.style.display = 'none';
-            welcomeOverlay.style.display = 'none';
-        });
-    }, 500);
-});
-
-/**
- * 初始化背景音乐
- */
-function initBackgroundMusic() {
-    const bgMusic = document.getElementById('bgMusic');
-    const musicControl = document.getElementById('musicControl');
-    
-    if (!bgMusic || !musicControl) return;
-    
-    // 检测是否是微信浏览器
-    const isWechat = /MicroMessenger/i.test(navigator.userAgent);
-    
-    // 音乐控制按钮点击事件
-    musicControl.addEventListener('click', function() {
-        if (bgMusic.paused) {
-            bgMusic.play().then(() => {
-                musicControl.classList.add('playing');
-            }).catch(err => {
-                console.error('播放失败:', err);
-            });
-        } else {
-            bgMusic.pause();
-            musicControl.classList.remove('playing');
+            audio.pause();
+            ctrl.classList.remove('playing');
         }
     });
-    
-    // 尝试自动播放
-    function attemptAutoplay() {
-        bgMusic.play().then(() => {
-            musicControl.classList.add('playing');
-            console.log('音乐自动播放成功');
-        }).catch(err => {
-            console.log('自动播放失败，需要用户交互:', err);
-            // 如果自动播放失败，添加一个提示
-            if (isWechat) {
-                const tip = document.createElement('div');
-                tip.style.position = 'fixed';
-                tip.style.top = '10px';
-                tip.style.left = '50%';
-                tip.style.transform = 'translateX(-50%)';
-                tip.style.padding = '10px';
-                tip.style.backgroundColor = 'rgba(0,0,0,0.7)';
-                tip.style.color = 'white';
-                tip.style.borderRadius = '5px';
-                tip.style.zIndex = '10000';
-                tip.textContent = '点击右下角按钮播放背景音乐';
-                tip.style.fontSize = '14px';
-                
-                document.body.appendChild(tip);
-                
-                setTimeout(() => {
-                    tip.style.opacity = '0';
-                    tip.style.transition = 'opacity 1s';
-                    setTimeout(() => document.body.removeChild(tip), 1000);
-                }, 3000);
-            }
-        });
-    }
-    
-    // 处理微信浏览器
-    if (isWechat) {
-        // 微信浏览器需要在用户触摸屏幕后播放
-        document.addEventListener('WeixinJSBridgeReady', attemptAutoplay, false);
-        document.addEventListener('touchstart', function() {
-            attemptAutoplay();
-            // 只需要触发一次
-            document.removeEventListener('touchstart', arguments.callee);
-        }, false);
-    } else {
-        // 其他浏览器直接尝试自动播放
-        attemptAutoplay();
-    }
-    
-    // 监听页面可见性变化，当页面重新变为可见时恢复播放
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden && musicControl.classList.contains('playing')) {
-            bgMusic.play().catch(err => console.log('恢复播放失败:', err));
-        }
-    });
-}
 
-// 鼠标彩虹轨迹效果
-(function() {
-    // 彩虹颜色数组
-    const colors = [
-        '#FF0000', // 红
-        '#FF7F00', // 橙
-        '#FFFF00', // 黄
-        '#00FF00', // 绿
-        '#0000FF', // 蓝
-        '#4B0082', // 靛
-        '#9400D3'  // 紫
-    ];
-    let colorIndex = 0;
-    
-    // 节流函数，限制函数执行频率
-    function throttle(func, limit) {
-        let inThrottle;
-        return function(...args) {
-            if (!inThrottle) {
-                func.apply(this, args);
-                inThrottle = true;
-                setTimeout(() => inThrottle = false, limit);
-            }
-        }
-    }
-    
-    // 创建红色像素爱心
-    function createHeart(e) {
-        // 如果鼠标在弹窗或遮罩层上，不创建爱心
-        if (e.target.closest('.welcome-modal') || e.target.closest('.modal-overlay')) {
-            return;
-        }
-
-        // 创建爱心元素
-        const heart = document.createElement('div');
-        heart.className = 'pixel-heart';
-        
-        // 设置爱心样式为红色像素风格
-        heart.style.backgroundImage = `
-            linear-gradient(135deg, 
-                transparent 0%, transparent 20%,
-                #ff0000 20%, #ff0000 40%,
-                transparent 40%, transparent 60%,
-                #ff0000 60%, #ff0000 80%,
-                transparent 80%, transparent 100%
-            ),
-            linear-gradient(45deg, 
-                transparent 0%, transparent 20%,
-                #ff0000 20%, #ff0000 40%,
-                transparent 40%, transparent 60%,
-                #ff0000 60%, #ff0000 80%,
-                transparent 80%, transparent 100%
-            )`;
-        heart.style.backgroundSize = '16px 16px';
-        
-        // 添加随机偏移
-        const offsetX = Math.random() * 20 - 10; // -10 to 10px
-        const offsetY = Math.random() * 20 - 10; // -10 to 10px
-        
-        // 设置位置
-        heart.style.left = (e.clientX - 8 + offsetX) + 'px';
-        heart.style.top = (e.clientY - 8 + offsetY) + 'px';
-        
-        document.body.appendChild(heart);
-        
-        // 在3秒后移除爱心
-        setTimeout(() => {
-            if (heart.parentNode) {
-                document.body.removeChild(heart);
-            }
-        }, 3000);
-    }
-    
-    // 使用节流函数限制爱心的创建频率
-    window.addEventListener('mousemove', throttle(createHeart, 100));
-})();
-
-// 鼠标点击动画效果
-(function () {
-    var a_idx = 0;
-    window.onclick = function (event) {
-        // 如果点击的是弹窗或遮罩层，不显示动画
-        if (event.target.closest('.welcome-modal') || event.target.closest('.modal-overlay')) {
-            return;
-        }
-
-        var a = new Array("❤爱小梅❤", "❤爱小浩❤", "❤抱抱小浩❤", "❤抱抱小梅❤");
-
-        var heart = document.createElement("b"); //创建b元素
-        heart.onselectstart = new Function('event.returnValue=false'); //防止拖动
-
-        document.body.appendChild(heart).innerHTML = a[a_idx]; //将b元素添加到页面上
-        a_idx = (a_idx + 1) % a.length;
-        heart.style.cssText = "position: fixed;left:-100%;"; //给元素设置样式
-
-        var f = 16, // 字体大小
-            x = event.clientX - f / 2, // 横坐标
-            y = event.clientY - f, // 纵坐标
-            c = randomColor(), // 随机颜色
-            a = 1, // 透明度
-            s = 1.2; // 放大缩小
-
-        var timer = setInterval(function () { //添加定时器
-            if (a <= 0) {
-                document.body.removeChild(heart);
-                clearInterval(timer);
-            } else {
-                heart.style.cssText = "font-size:16px;cursor: default;position: fixed;color:" +
-                    c + ";left:" + x + "px;top:" + y + "px;opacity:" + a + ";transform:scale(" +
-                    s + ");";
-
-                y--;
-                a -= 0.016;
-                s += 0.002;
-            }
-        }, 15);
+    const tryPlay = () => {
+        audio.play().then(() => ctrl.classList.add('playing')).catch(() => {});
     };
 
-    // 随机颜色
-    function randomColor() {
-        return "rgb(" + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + "," + (~~(Math.random() * 255)) + ")";
-    }
-}());
+    document.addEventListener('click', function autoplay() {
+        tryPlay();
+        document.removeEventListener('click', autoplay);
+    }, { once: true });
 
-/**
- * 初始化视频墙功能
- */
-function initVideoWall() {
-    // 为所有视频添加自定义控制
-    const videos = document.querySelectorAll('.video-item video');
-    
-    videos.forEach(video => {
-        // 确保视频控件显示
-        video.controls = true;
-        
-        // 添加视频加载错误处理
-        video.addEventListener('error', function() {
-            console.error('视频加载失败:', video.src);
-            // 显示错误提示
-            showVideoError(video);
-        });
-        
-        // 添加视频加载完成事件
-        video.addEventListener('loadeddata', function() {
-            console.log('视频加载完成:', video.src);
-            // 隐藏加载状态
-            hideVideoLoading(video);
-        });
-        
-        // 添加播放状态监听
-        video.addEventListener('play', function() {
-            updatePlayButton(video.id, false);
-        });
-        
-        video.addEventListener('pause', function() {
-            updatePlayButton(video.id, true);
-        });
-        
-        // 移动端优化：确保视频在移动设备上正常播放
-        video.addEventListener('click', function() {
-            togglePlay(video.id);
-        });
-        
-        // 尝试自动加载视频
-        video.load();
+    tryPlay();
+
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && ctrl.classList.contains('playing')) {
+            audio.play().catch(() => {});
+        }
     });
-    
-    // 添加视频墙的平滑滚动
-    setupVideoWallNavigation();
 }
 
-/**
- * 显示视频加载错误
- */
-function showVideoError(video) {
-    const wrapper = video.closest('.video-wrapper');
-    if (wrapper) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'video-error';
-        errorDiv.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 视频加载失败';
-        wrapper.appendChild(errorDiv);
-    }
-}
+// =====================================================
+// 纪念日（云端版）
+// =====================================================
+function initAnniversaries() {
+    loadAnniversariesFromCloud();
+    setInterval(calculateCountdowns, 3600000);
 
-/**
- * 隐藏视频加载状态
- */
-function hideVideoLoading(video) {
-    const wrapper = video.closest('.video-wrapper');
-    if (wrapper) {
-        const errorDiv = wrapper.querySelector('.video-error');
-        if (errorDiv) {
-            errorDiv.remove();
+    const form = document.getElementById('add-date-form');
+    form && form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const name = form.querySelector('input[name="name"]').value.trim();
+        const date = form.querySelector('input[name="date"]').value;
+        if (!name || !date) return;
+
+        // 检查是否登录管理员
+        const token = localStorage.getItem('hm_admin_token') || '';
+        if (!token) {
+            showToast('<i class="fas fa-lock"></i> 请先登录管理后台再添加');
+            setTimeout(() => { window.open('admin.html', '_blank'); }, 1200);
+            return;
         }
-    }
-}
 
-/**
- * 切换视频播放/暂停
- */
-function togglePlay(videoId) {
-    const video = document.getElementById(videoId);
-    if (video) {
-        if (video.paused) {
-            video.play().catch(error => {
-                console.error('视频播放失败:', error);
-                alert('视频播放失败，请检查视频文件是否存在');
+        try {
+            const res = await fetch(`${API_BASE}/api/anniversaries`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ name, date })
             });
-        } else {
-            video.pause();
+            const data = await res.json();
+            if (data.success) {
+                addDateCard(name, date);
+                form.reset();
+                showToast('<i class="fas fa-check-circle"></i> 纪念日添加成功 ♡');
+            } else {
+                showToast('<i class="fas fa-exclamation-circle"></i> 添加失败：' + (data.error || '未知错误'));
+            }
+        } catch (err) {
+            showToast('<i class="fas fa-exclamation-circle"></i> 网络错误，请稍后重试');
         }
-    }
+    });
 }
 
-/**
- * 切换全屏
- */
-function toggleFullscreen(videoId) {
-    const video = document.getElementById(videoId);
-    if (video) {
-        if (!document.fullscreenElement) {
-            video.requestFullscreen().catch(err => {
-                console.error('全屏失败:', err);
-                // 尝试使用兼容性方法
-                if (video.webkitRequestFullscreen) {
-                    video.webkitRequestFullscreen();
-                } else if (video.mozRequestFullScreen) {
-                    video.mozRequestFullScreen();
-                }
-            });
-        } else {
-            document.exitFullscreen();
+async function loadAnniversariesFromCloud() {
+    try {
+        const res = await fetch(`${API_BASE}/api/anniversaries`);
+        if (!res.ok) throw new Error('API 不可用');
+        const list = await res.json();
+        const container = document.getElementById('anniversary-list');
+        if (container) container.innerHTML = '';
+        if (Array.isArray(list)) {
+            list.forEach(item => addDateCard(item.name, item.date, item.id));
         }
+    } catch (e) {
+        // 如果 API 未部署，回退到 localStorage
+        loadAnniversariesLocal();
     }
 }
 
-/**
- * 更新播放按钮状态
- */
-function updatePlayButton(videoId, isPaused) {
-    const button = document.querySelector(`[onclick="togglePlay('${videoId}')"] i`);
-    if (button) {
-        if (isPaused) {
-            button.className = 'fas fa-play';
-        } else {
-            button.className = 'fas fa-pause';
+function loadAnniversariesLocal() {
+    const saved = localStorage.getItem('hm_anniversaries');
+    if (!saved) return;
+    try {
+        JSON.parse(saved).forEach(item => addDateCard(item.name, item.date));
+    } catch (e) {}
+}
+
+function addDateCard(name, date, cloudId) {
+    const container = document.getElementById('anniversary-list');
+    if (!container) return;
+
+    const card = document.createElement('div');
+    card.className = 'date-card fade-in';
+    card.dataset.name = name;
+    card.dataset.date = date;
+    if (cloudId) card.dataset.cloudId = cloudId;
+
+    var formatted = new Date(date + 'T00:00:00').toLocaleDateString('zh-CN', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    card.innerHTML = '<div class="date-card-icon"><i class="fas fa-heart"></i></div>' +
+        '<h3>' + escHtml(name) + '</h3>' +
+        '<div class="date-str">' + formatted + '</div>' +
+        '<div class="countdown" data-date="' + date + '">' +
+        '<span class="days">0</span>' +
+        '<span class="days-ago"></span>' +
+        '</div>' +
+        '<button class="delete-date-btn" title="删除纪念日"><i class="fas fa-times"></i></button>';
+
+    card.querySelector('.delete-date-btn').addEventListener('click', async function() {
+        if (!confirm('确定删除这个纪念日吗？')) return;
+
+        const token = localStorage.getItem('hm_admin_token') || '';
+        if (!token) {
+            showToast('<i class="fas fa-lock"></i> 请先登录管理后台再操作');
+            return;
         }
-    }
+
+        if (cloudId || card.dataset.cloudId) {
+            const id = cloudId || card.dataset.cloudId;
+            try {
+                await fetch(`${API_BASE}/api/anniversaries/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            } catch (err) {}
+        }
+
+        card.style.transition = 'all 0.35s ease';
+        card.style.opacity = '0';
+        card.style.transform = 'scale(0.85)';
+        setTimeout(() => {
+            card.remove();
+            showToast('<i class="fas fa-trash-alt"></i> 纪念日已删除');
+        }, 350);
+    });
+
+    container.appendChild(card);
+    requestAnimationFrame(() => requestAnimationFrame(() => card.classList.add('visible')));
+    calculateCountdowns();
 }
 
-/**
- * 设置视频墙导航
- */
-function setupVideoWallNavigation() {
-    const videoLink = document.querySelector('nav a[href="#videos"]');
-    const videoSection = document.getElementById('videos');
-    
-    if (videoLink && videoSection) {
-        videoLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            // 移除所有活动状态
-            document.querySelectorAll('nav a').forEach(link => {
-                link.classList.remove('active');
-            });
-            
-            // 添加当前活动状态
-            this.classList.add('active');
-            
-            // 平滑滚动到视频墙部分
-            videoSection.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
+function calculateCountdowns() {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    document.querySelectorAll('.countdown[data-date]').forEach(function(el) {
+        var d = new Date(el.dataset.date + 'T00:00:00');
+        var thisYear = new Date(d);
+        thisYear.setFullYear(today.getFullYear());
+        if (thisYear < today) thisYear.setFullYear(today.getFullYear() + 1);
+
+        var diff = Math.ceil((thisYear - today) / 86400000);
+        var daysEl = el.querySelector('.days');
+        var daysAgoEl = el.querySelector('.days-ago');
+
+        if (daysEl) {
+            if (diff === 0) {
+                daysEl.textContent = '今天';
+                daysEl.style.fontSize = '1.2rem';
+            } else {
+                daysEl.textContent = diff;
+                daysEl.style.fontSize = '';
+            }
+        }
+        if (daysAgoEl) {
+            daysAgoEl.textContent = diff === 0 ? '🎉 就是今天！' : '天后';
+        }
+    });
+}
+
+// =====================================================
+// 照片墙（云端版 + 静态照片保留）
+// =====================================================
+function initGallery() {
+    // 先加载云端动态照片
+    loadPhotosFromCloud();
+
+    // 静态照片灯箱
+    setupLightbox();
+}
+
+async function loadPhotosFromCloud() {
+    try {
+        const res = await fetch(`${API_BASE}/api/photos`);
+        if (!res.ok) throw new Error('API 不可用');
+        const list = await res.json();
+        if (!Array.isArray(list) || list.length === 0) return;
+
+        const grid = document.querySelector('.gallery-grid');
+        if (!grid) return;
+
+        // 在现有静态图片前面插入云端图片
+        list.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'gallery-item fade-in';
+            div.dataset.caption = item.caption || '';
+            div.dataset.cloudId = item.id;
+            div.innerHTML = `
+                <img src="${escHtml(item.url)}" alt="${escHtml(item.caption)}" loading="lazy" onerror="this.parentElement.style.display='none'">
+                <div class="gallery-overlay">
+                    <i class="fas fa-expand-alt"></i>
+                    <p>${escHtml(item.caption)}</p>
+                </div>`;
+            grid.insertBefore(div, grid.firstChild);
+            requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('visible')));
         });
+
+        // 重新绑定灯箱
+        setupLightbox();
+    } catch (e) {
+        // API 未部署时静默失败，只显示静态图片
     }
+}
+
+function setupLightbox() {
+    var items = document.querySelectorAll('.gallery-item');
+    var lightbox = document.getElementById('lightbox');
+    var lbImg = document.getElementById('lightboxImg');
+    var lbCaption = document.getElementById('lightboxCaption');
+    var lbClose = document.getElementById('lightboxClose');
+    var lbPrev = document.getElementById('lightboxPrev');
+    var lbNext = document.getElementById('lightboxNext');
+
+    if (!lightbox) return;
+
+    var currentIndex = 0;
+    var images = [];
+
+    items.forEach(function(item, i) {
+        var img = item.querySelector('img');
+        var caption = item.dataset.caption || '';
+        images.push({ src: img ? img.src : '', caption: caption });
+
+        // 清除旧事件（克隆替换）
+        var newItem = item.cloneNode(true);
+        item.parentNode.replaceChild(newItem, item);
+        newItem.addEventListener('click', function() {
+            currentIndex = i;
+            openLightbox(images[i].src, images[i].caption);
+        });
+    });
+
+    function openLightbox(src, caption) {
+        lbImg.src = src;
+        lbCaption.textContent = caption;
+        lightbox.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    lbClose.onclick = closeLightbox;
+    lightbox.onclick = function(e) { if (e.target === lightbox) closeLightbox(); };
+
+    lbPrev.onclick = function() {
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        openLightbox(images[currentIndex].src, images[currentIndex].caption);
+    };
+
+    lbNext.onclick = function() {
+        currentIndex = (currentIndex + 1) % images.length;
+        openLightbox(images[currentIndex].src, images[currentIndex].caption);
+    };
+
+    document.addEventListener('keydown', function(e) {
+        if (!lightbox.classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') lbPrev.onclick();
+        if (e.key === 'ArrowRight') lbNext.onclick();
+    });
+}
+
+// =====================================================
+// 视频墙（云端版）
+// =====================================================
+async function loadVideosFromCloud() {
+    try {
+        const res = await fetch(`${API_BASE}/api/videos`);
+        if (!res.ok) throw new Error('API 不可用');
+        const list = await res.json();
+        if (!Array.isArray(list) || list.length === 0) return;
+
+        const grid = document.querySelector('.video-grid');
+        if (!grid) return;
+
+        list.forEach(item => {
+            const embedUrl = convertToEmbedUrl(item.url);
+            const div = document.createElement('div');
+            div.className = 'video-card fade-in';
+            div.innerHTML = `
+                <div class="video-thumb">
+                    <div class="video-wrapper">
+                        <iframe src="${escHtml(embedUrl)}" frameborder="0" allowfullscreen class="embedded-video"></iframe>
+                    </div>
+                </div>
+                <div class="video-meta">
+                    <h3>${escHtml(item.title)}</h3>
+                    <p>${escHtml(item.description || '')}</p>
+                    <div class="video-tags">
+                        <span><i class="fas fa-play"></i> 视频</span>
+                        <span><i class="fas fa-heart"></i> 回忆</span>
+                    </div>
+                </div>`;
+            grid.appendChild(div);
+            requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('visible')));
+        });
+    } catch (e) {
+        // API 未部署时静默失败
+    }
+}
+
+// 把分享链接转为可嵌入的 iframe src
+function convertToEmbedUrl(url) {
+    if (!url) return '';
+    // B站
+    const bvMatch = url.match(/bilibili\.com\/video\/(BV[a-zA-Z0-9]+)/);
+    if (bvMatch) return `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&autoplay=0`;
+    // YouTube
+    const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+    if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+    // 其他直接使用原链接
+    return url;
+}
+
+// =====================================================
+// 留言板（云端版）
+// =====================================================
+function initMessages() {
+    loadMessagesFromCloud();
+
+    var form = document.getElementById('message-form');
+    if (!form) return;
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        var name = form.querySelector('input').value.trim();
+        var content = form.querySelector('textarea').value.trim();
+        if (!name || !content) {
+            showToast('<i class="fas fa-exclamation-circle"></i> 请填写姓名和留言内容');
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE}/api/messages`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, content })
+            });
+            const data = await res.json();
+            if (data.success) {
+                var dateStr = new Date().toLocaleDateString('zh-CN');
+                addMessageEl(name, dateStr, content, data.id);
+                form.reset();
+                showToast('<i class="fas fa-heart"></i> 留言发送成功 ♡');
+            } else {
+                showToast('<i class="fas fa-exclamation-circle"></i> 发送失败，请稍后重试');
+            }
+        } catch (err) {
+            // 回退到本地存储
+            var dateStr = new Date().toLocaleDateString('zh-CN');
+            addMessageEl(name, dateStr, content);
+            saveMessagesLocal();
+            form.reset();
+            showToast('<i class="fas fa-heart"></i> 留言发送成功（本地） ♡');
+        }
+    });
+}
+
+async function loadMessagesFromCloud() {
+    try {
+        const res = await fetch(`${API_BASE}/api/messages`);
+        if (!res.ok) throw new Error('API 不可用');
+        const list = await res.json();
+        const wall = document.getElementById('message-wall');
+        if (wall) wall.innerHTML = '';
+        if (Array.isArray(list)) {
+            list.forEach(item => {
+                const d = new Date(item.created_at);
+                const dateStr = d.toLocaleDateString('zh-CN');
+                addMessageEl(item.name, dateStr, item.content, item.id);
+            });
+        }
+    } catch (e) {
+        // 回退到本地存储
+        loadMessagesLocal();
+    }
+}
+
+function loadMessagesLocal() {
+    var saved = localStorage.getItem('hm_messages');
+    if (!saved) return;
+    try {
+        JSON.parse(saved).forEach(function(m) { addMessageEl(m.name, m.date, m.content); });
+    } catch (e) {}
+}
+
+function saveMessagesLocal() {
+    var msgs = [];
+    document.querySelectorAll('.message').forEach(function(el) {
+        msgs.push({
+            name: el.querySelector('.name') ? el.querySelector('.name').textContent : '',
+            date: el.querySelector('.date') ? el.querySelector('.date').textContent : '',
+            content: el.querySelector('p') ? el.querySelector('p').textContent : ''
+        });
+    });
+    localStorage.setItem('hm_messages', JSON.stringify(msgs));
+}
+
+function addMessageEl(name, date, content, cloudId) {
+    var wall = document.getElementById('message-wall');
+    if (!wall) return;
+
+    var avatar = (name || '?').charAt(0).toUpperCase();
+    var el = document.createElement('div');
+    el.className = 'message fade-in';
+    if (cloudId) el.dataset.cloudId = cloudId;
+
+    el.innerHTML = '<div class="message-header">' +
+        '<div class="msg-avatar">' + avatar + '</div>' +
+        '<div class="msg-meta">' +
+        '<span class="name">' + escHtml(name) + '</span>' +
+        '<span class="date">' + escHtml(date) + '</span>' +
+        '</div></div>' +
+        '<p>' + escHtml(content) + '</p>' +
+        '<button class="msg-delete" title="删除留言"><i class="fas fa-times"></i></button>';
+
+    el.querySelector('.msg-delete').addEventListener('click', async function() {
+        if (!confirm('确定删除这条留言吗？')) return;
+
+        const token = localStorage.getItem('hm_admin_token') || '';
+        if (!token) {
+            showToast('<i class="fas fa-lock"></i> 请先登录管理后台再操作');
+            return;
+        }
+
+        if (cloudId || el.dataset.cloudId) {
+            const id = cloudId || el.dataset.cloudId;
+            try {
+                await fetch(`${API_BASE}/api/messages/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            } catch (err) {}
+        }
+
+        el.style.transition = 'all 0.35s ease';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(20px)';
+        setTimeout(function() {
+            el.remove();
+            showToast('<i class="fas fa-trash-alt"></i> 留言已删除');
+        }, 350);
+    });
+
+    wall.insertBefore(el, wall.firstChild);
+    requestAnimationFrame(function() {
+        requestAnimationFrame(function() { el.classList.add('visible'); });
+    });
+}
+
+// =====================================================
+// 滚动入场动画
+// =====================================================
+function initScrollAnimations() {
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+    }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll(
+        '.profile-card, .story-block, .qnav-card, ' +
+        '.gallery-item, .video-card, .form-card, .section-header'
+    ).forEach(function(el) {
+        el.classList.add('fade-in');
+        observer.observe(el);
+    });
+}
+
+// =====================================================
+// 鼠标特效
+// =====================================================
+function initMouseEffects() {
+    var texts = ['❤爱小梅❤', '❤爱小浩❤', '❤抱抱小浩❤', '❤抱抱小梅❤'];
+    var idx = 0;
+
+    window.addEventListener('click', function(e) {
+        if (e.target.closest('.welcome-modal') || e.target.closest('.modal-overlay')) return;
+        if (e.target.closest('#lightbox')) return;
+
+        var el = document.createElement('span');
+        el.className = 'click-text';
+        el.textContent = texts[idx % texts.length];
+        idx++;
+
+        var colors = ['#e8637a', '#f2a0b0', '#c0475c', '#ff9eb5', '#ff6b9d'];
+        el.style.cssText = `position:fixed;left:${e.clientX}px;top:${e.clientY}px;color:${colors[Math.floor(Math.random()*colors.length)]};font-size:15px;opacity:1;transform:translate(-50%,-50%);pointer-events:none;z-index:9999;font-family:Noto Serif SC,serif;font-weight:600;white-space:nowrap;transition:all 1.2s ease-out;`;
+
+        document.body.appendChild(el);
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+            el.style.top = (e.clientY - 60) + 'px';
+            el.style.opacity = '0';
+            el.style.fontSize = '18px';
+        }));
+        setTimeout(() => el.remove(), 1300);
+    });
+
+    var lastHeart = 0;
+    window.addEventListener('mousemove', function(e) {
+        var now = Date.now();
+        if (now - lastHeart < 120) return;
+        lastHeart = now;
+        if (e.target.closest('.welcome-modal') || e.target.closest('.modal-overlay')) return;
+
+        var hearts = ['♡', '♥', '❤', '✿', '❋'];
+        var colors = ['#e8637a', '#f2a0b0', '#ffb3c6', '#ffd6e0', '#c0475c'];
+        var h = document.createElement('span');
+        h.className = 'heart-particle';
+        h.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+        h.style.cssText = `position:fixed;left:${e.clientX + (Math.random()*20-10)}px;top:${e.clientY + (Math.random()*20-10)}px;color:${colors[Math.floor(Math.random()*colors.length)]};font-size:${12+Math.random()*8}px;pointer-events:none;z-index:9998;`;
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 2600);
+    }, { passive: true });
+}
+
+// =====================================================
+// 回到顶部
+// =====================================================
+function initBackTop() {
+    var btn = document.getElementById('backTop');
+    if (!btn) return;
+    window.addEventListener('scroll', () => btn.classList.toggle('visible', window.scrollY > 400), { passive: true });
+    btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+}
+
+// =====================================================
+// 欢迎弹窗
+// =====================================================
+function showWelcomeModal() {
+    var modal = document.getElementById('welcome-modal');
+    var overlay = document.getElementById('welcome-overlay');
+    var closeBtn = document.getElementById('close-welcome');
+    if (!modal || !overlay || !closeBtn) return;
+
+    setTimeout(() => {
+        modal.style.display = 'block';
+        overlay.style.display = 'block';
+    }, 600);
+
+    const close = () => {
+        modal.style.display = 'none';
+        overlay.style.display = 'none';
+        // 弹窗关闭后加载视频（避免影响首屏性能）
+        loadVideosFromCloud();
+    };
+
+    closeBtn.addEventListener('click', close);
+    overlay.addEventListener('click', close);
+}
+
+// =====================================================
+// Toast 通知
+// =====================================================
+var toastTimer = null;
+function showToast(html) {
+    var toast = document.querySelector('.toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.className = 'toast';
+        document.body.appendChild(toast);
+    }
+    toast.innerHTML = html;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// =====================================================
+// XSS 防护
+// =====================================================
+function escHtml(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }

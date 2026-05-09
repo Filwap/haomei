@@ -3,261 +3,403 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>小浩&小梅的爱情纪念</title>
+    <title>小浩 & 小梅 · 我们的爱情纪念</title>
     <link rel="icon" href="photos/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
 <body>
+
     <!-- 欢迎弹窗 -->
     <div class="modal-overlay" id="welcome-overlay"></div>
     <div class="welcome-modal" id="welcome-modal">
-        <h2>欢迎来到小浩&小梅的纪念网站</h2>
-        <p>感谢您访问我们的爱情纪念网站，这里记录了我们美好的点点滴滴。</p>
-        <button id="close-welcome">我知道了</button>
+        <div class="modal-deco"></div>
+        <div class="modal-hearts">
+            <span>♡</span><span>♡</span><span>♡</span>
+        </div>
+        <h2>欢迎回到我们的小世界</h2>
+        <p>这里珍藏着我们每一个美好的瞬间<br>每一段回忆，都是爱最温柔的见证</p>
+        <button id="close-welcome">进入我们的世界 ♡</button>
     </div>
 
     <!-- 背景音乐 -->
     <audio id="bgMusic" loop>
         <source src="music/background.mp3" type="audio/mpeg">
-        您的浏览器不支持音频播放。
     </audio>
-    
+
     <!-- 音乐控制按钮 -->
-    <div id="musicControl" class="music-control">
-        <i class="fas fa-music"></i>
+    <div id="musicControl" class="music-control" title="背景音乐">
+        <div class="music-disc">
+            <i class="fas fa-music"></i>
+        </div>
+        <div class="music-waves">
+            <span></span><span></span><span></span>
+        </div>
     </div>
 
-    <header>
-        <div class="header-content">
-            <h1>我们的爱情纪念</h1>
-            <p class="subtitle">记录每一个美好瞬间</p>
+    <!-- 顶部导航 -->
+    <nav id="mainNav">
+        <div class="nav-inner">
+            <a href="#home" class="nav-logo">小浩 & 小梅 ♡</a>
+            <ul class="nav-links">
+                <li><a href="#home" class="active"><i class="fas fa-home"></i><span>首页</span></a></li>
+                <li><a href="#dates"><i class="fas fa-calendar-heart"></i><span>纪念日</span></a></li>
+                <li><a href="#gallery"><i class="fas fa-images"></i><span>照片墙</span></a></li>
+                <li><a href="#videos"><i class="fas fa-video"></i><span>视频墙</span></a></li>
+                <li><a href="#messages"><i class="fas fa-comment-heart"></i><span>留言板</span></a></li>
+            </ul>
+            <button class="nav-toggle" id="navToggle">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero 首屏 -->
+    <header id="hero">
+        <div class="hero-bg">
+            <div class="hero-overlay"></div>
+            <img src="photos/c.jpg" class="hero-img" alt="封面">
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge">我们在一起</div>
+            <h1 class="hero-title">小浩 <span class="hero-heart">♡</span> 小梅</h1>
+            <p class="hero-sub">每一天都是我们故事里最美的一页</p>
+            <div class="hero-days">
+                <div class="days-ring">
+                    <span id="days-count" class="days-num">0</span>
+                    <span class="days-label">天</span>
+                </div>
+                <p class="days-desc">相伴至今</p>
+            </div>
+            <a href="#home" class="hero-btn">探索我们的故事 ↓</a>
+        </div>
+        <div class="hero-scroll-hint">
+            <span></span>
         </div>
     </header>
 
-    <nav>
-        <ul>
-            <li><a href="#home" class="active">首页</a></li>
-            <li><a href="#dates">纪念日</a></li>
-            <li><a href="#gallery">照片墙</a></li>
-            <li><a href="#videos">视频墙</a></li>
-            <li><a href="#messages">留言板</a></li>
-        </ul>
-    </nav>
-
     <main>
-        <!-- 首页部分 -->
+        <!-- ===== 首页 ===== -->
         <section id="home" class="section">
-            <div class="couple-info">
-                <div class="profile">
-                    <div class="avatar">
-                        <img src="photos/d.jpg" alt="Ta的照片">
+            <div class="section-header">
+                <div class="section-tag">Our Story</div>
+                <h2 class="section-title">我们的故事</h2>
+                <p class="section-desc">从相遇到相爱，每一个瞬间都值得被永远珍藏</p>
+            </div>
+
+            <div class="couple-wrap">
+                <div class="profile-card" data-side="left">
+                    <div class="profile-avatar">
+                        <img src="photos/d.jpg" alt="小梅">
+                        <div class="avatar-ring"></div>
                     </div>
-                    <h2>小梅</h2>
-                    <p>一个可爱又迷人的美少女</p>
+                    <div class="profile-info">
+                        <h3>小梅</h3>
+                        <p>可爱又迷人的美少女</p>
+                        <div class="profile-tags">
+                            <span>甜甜的</span>
+                            <span>可可爱爱</span>
+                            <span>最好的她</span>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="heart">
-                    <i class="fas fa-heart"></i>
-                    <div class="days-together">
-                        <span id="days-count">0</span>
-                        <p>天</p>
+
+                <div class="couple-center">
+                    <div class="center-heart-wrap">
+                        <div class="center-heart">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <div class="center-days">
+                            <span id="days-count-2">0</span>
+                            <small>天</small>
+                        </div>
                     </div>
+                    <p class="center-date">2025.04.17</p>
+                    <p class="center-label">相恋纪念日</p>
                 </div>
-                
-                <div class="profile">
-                    <div class="avatar">
-                        <img src="photos/f.jpg" alt="我的照片">
+
+                <div class="profile-card" data-side="right">
+                    <div class="profile-avatar">
+                        <img src="photos/f.jpg" alt="小浩">
+                        <div class="avatar-ring"></div>
                     </div>
-                    <h2>小浩</h2>
-                    <p>笨蛋小狗</p>
+                    <div class="profile-info">
+                        <h3>小浩</h3>
+                        <p>最爱小梅的笨蛋小狗</p>
+                        <div class="profile-tags">
+                            <span>暖暖的</span>
+                            <span>呆呆的</span>
+                            <span>最爱的他</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div class="love-story">
-                <h2>我们的故事</h2>
-                <p>这里的每一段回忆都值得被珍藏，每一个瞬间都值得被记录。从初次相遇的心动，到相知相守的温暖，这一路走来的点点滴滴，都是爱情最美的见证。</p>
+
+            <div class="story-block">
+                <div class="story-quote">"</div>
+                <p class="story-text">这里的每一段回忆都值得被珍藏，每一个瞬间都值得被记录。从初次相遇的心动，到相知相守的温暖，这一路走来的点点滴滴，都是爱情最美的见证。愿我们的故事，在时光的长河里，永远被温柔以待。</p>
+                <div class="story-sign">— 小浩 & 小梅</div>
+            </div>
+
+            <!-- 快速入口卡片 -->
+            <div class="quick-nav">
+                <a href="#dates" class="qnav-card">
+                    <i class="fas fa-calendar-heart"></i>
+                    <span>纪念日</span>
+                </a>
+                <a href="#gallery" class="qnav-card">
+                    <i class="fas fa-images"></i>
+                    <span>照片墙</span>
+                </a>
+                <a href="#videos" class="qnav-card">
+                    <i class="fas fa-video"></i>
+                    <span>视频墙</span>
+                </a>
+                <a href="#messages" class="qnav-card">
+                    <i class="fas fa-comment-heart"></i>
+                    <span>留言板</span>
+                </a>
             </div>
         </section>
 
-        <!-- 纪念日部分 -->
-        <section id="dates" class="section">
-            <h2 class="section-title">纪念日</h2>
-            <div class="container">
-                                <!-- 纪念日列表 -->
-                <div class="anniversary">
-                    <!-- 纪念日卡片将在这里动态生成 -->
-                </div>
+        <!-- ===== 纪念日 ===== -->
+        <section id="dates" class="section section-alt">
+            <div class="section-header">
+                <div class="section-tag">Anniversaries</div>
+                <h2 class="section-title">纪念日</h2>
+                <p class="section-desc">每一个值得记住的日子，都藏着我们最深的爱意</p>
+            </div>
 
-                <!-- 添加纪念日表单 -->
-                <div class="add-date">
-                    <h3>添加新的纪念日</h3>
-                    <form id="add-date-form">
-                        <input type="text" name="name" placeholder="纪念日名称" required>
-                        <input type="date" name="date" required>
-                        <button type="submit" class="submit-btn">添加纪念日</button>
-                    </form>
-                </div>
+            <div class="anniversary" id="anniversary-list">
+                <!-- 纪念日卡片动态生成 -->
+            </div>
+
+            <div class="add-date-panel">
+                <div class="add-date-icon"><i class="fas fa-plus-circle"></i></div>
+                <h3>添加新的纪念日</h3>
+                <form id="add-date-form" class="add-date-form">
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label>纪念日名称</label>
+                            <input type="text" name="name" placeholder="例如：初次约会" required>
+                        </div>
+                        <div class="form-field">
+                            <label>纪念日期</label>
+                            <input type="date" name="date" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-heart"></i> 添加纪念日
+                    </button>
+                </form>
             </div>
         </section>
 
-        <!-- 照片墙部分 -->
+        <!-- ===== 照片墙 ===== -->
         <section id="gallery" class="section">
-            <h2 class="section-title">照片墙</h2>
-            
-            <div class="gallery-container">
-                <div class="gallery-item">
-                    <img src="photos/g.jpg" alt="照片1">
-                    <div class="overlay">
+            <div class="section-header">
+                <div class="section-tag">Photo Wall</div>
+                <h2 class="section-title">照片墙</h2>
+                <p class="section-desc">定格每一个美好瞬间，让时光为爱作证</p>
+            </div>
+
+            <div class="gallery-grid">
+                <div class="gallery-item" data-caption="特别的日子">
+                    <img src="photos/g.jpg" alt="特别的日子" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>特别的日子</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/a.jpg" alt="照片2">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="甜蜜时光">
+                    <img src="photos/a.jpg" alt="甜蜜时光" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>甜蜜时光</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/c.jpg" alt="照片3">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="美妙时光">
+                    <img src="photos/c.jpg" alt="美妙时光" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>美妙时光</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/i.jpg" alt="照片4">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="浪漫晚餐">
+                    <img src="photos/i.jpg" alt="浪漫晚餐" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>浪漫晚餐</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/h.jpg" alt="照片5">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="难忘时刻">
+                    <img src="photos/h.jpg" alt="难忘时刻" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>难忘时刻</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/e.jpg" alt="照片6">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="快乐时光">
+                    <img src="photos/e.jpg" alt="快乐时光" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>快乐时光</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/3.jpg" alt="照片7">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="臭美ing">
+                    <img src="photos/3.jpg" alt="臭美ing" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>臭美ing</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/4.jpg" alt="照片8">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="我拍的真好看">
+                    <img src="photos/4.jpg" alt="我拍的真好看" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>我拍的真好看</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/5.jpg" alt="照片9">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="约拍拍的">
+                    <img src="photos/5.jpg" alt="约拍拍的" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>约拍拍的</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/6.jpg" alt="照片10">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="好看">
+                    <img src="photos/6.jpg" alt="好看" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>好看</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/1.jpg" alt="照片11">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="又去拍照了">
+                    <img src="photos/1.jpg" alt="又去拍照了" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>又去拍照了</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/2.jpg" alt="照片12">
-                    <div class="overlay">
+                <div class="gallery-item" data-caption="两个人在对比肤色">
+                    <img src="photos/2.jpg" alt="两个人在对比肤色" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>两个人在对比肤色</p>
                     </div>
                 </div>
-                <div class="gallery-item">
-                    <img src="photos/7.jpg" alt="照片13">
-                    <div class="overlay">
+                <div class="gallery-item gallery-item--wide" data-caption="第一次为她过生日">
+                    <img src="photos/7.jpg" alt="第一次为她过生日" loading="lazy">
+                    <div class="gallery-overlay">
+                        <i class="fas fa-expand-alt"></i>
                         <p>第一次为她过生日</p>
-                    </div>
-            </div>
-        </section>
-
-        <!-- 视频墙部分 -->
-        <section id="videos" class="section">
-            <h2 class="section-title">视频墙</h2>
-            
-            <div class="video-container">
-                <div class="video-item">
-                    <div class="video-wrapper">
-                        <iframe 
-                            src="http://go.plvideo.cn/front/video/view?vid=kb6b590efa0df33c8853042e6a42efe5_k" 
-                            frameborder="0" 
-                            allowfullscreen
-                            class="embedded-video">
-                        </iframe>
-                    </div>
-                    <div class="video-info">
-                        <h3>旅游合集</h3>
-                        <p>记录我们美好的旅行时光</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- 留言板部分 -->
-<section id="messages" class="section">
-    <h2 class="section-title">留言板</h2>
-    
-    <div class="message-form">
-        <h3>留下你的爱意</h3>
-        <form id="message-form">
-            <input type="text" placeholder="你的名字" required>
-            <textarea placeholder="写下你想说的话..." required></textarea>
-            <div class="form-buttons">
-                <button type="submit">发送爱的留言</button>
+        <!-- 灯箱 -->
+        <div class="lightbox" id="lightbox">
+            <button class="lightbox-close" id="lightboxClose"><i class="fas fa-times"></i></button>
+            <button class="lightbox-prev" id="lightboxPrev"><i class="fas fa-chevron-left"></i></button>
+            <button class="lightbox-next" id="lightboxNext"><i class="fas fa-chevron-right"></i></button>
+            <div class="lightbox-inner">
+                <img src="" alt="" id="lightboxImg">
+                <p class="lightbox-caption" id="lightboxCaption"></p>
             </div>
-        </form>
-    </div>
-    
-    <div class="message-wall">
-        <!-- 留言将在这里动态显示 -->
-    </div>
-</section>
+        </div>
+
+        <!-- ===== 视频墙 ===== -->
+        <section id="videos" class="section section-alt">
+            <div class="section-header">
+                <div class="section-tag">Video Wall</div>
+                <h2 class="section-title">视频墙</h2>
+                <p class="section-desc">动态留住最美的那些时刻</p>
+            </div>
+
+            <div class="video-grid">
+                <div class="video-card">
+                    <div class="video-thumb">
+                        <div class="video-wrapper">
+                            <iframe
+                                src="http://go.plvideo.cn/front/video/view?vid=kb6b590efa0df33c8853042e6a42efe5_k"
+                                frameborder="0"
+                                allowfullscreen
+                                class="embedded-video">
+                            </iframe>
+                        </div>
+                    </div>
+                    <div class="video-meta">
+                        <h3>旅游合集</h3>
+                        <p>记录我们美好的旅行时光</p>
+                        <div class="video-tags">
+                            <span><i class="fas fa-map-marker-alt"></i> 旅行</span>
+                            <span><i class="fas fa-heart"></i> 回忆</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- 可在此添加更多视频 -->
+            </div>
+        </section>
+
+        <!-- ===== 留言板 ===== -->
+        <section id="messages" class="section">
+            <div class="section-header">
+                <div class="section-tag">Messages</div>
+                <h2 class="section-title">留言板</h2>
+                <p class="section-desc">把最想说的话留在这里，让爱意永久存档</p>
+            </div>
+
+            <div class="message-layout">
+                <div class="message-form-wrap">
+                    <div class="form-card">
+                        <h3><i class="fas fa-pen-nib"></i> 留下你的爱意</h3>
+                        <form id="message-form">
+                            <div class="form-field">
+                                <label>你的名字</label>
+                                <input type="text" placeholder="小浩 / 小梅 / 朋友" required>
+                            </div>
+                            <div class="form-field">
+                                <label>留言内容</label>
+                                <textarea placeholder="写下你想对TA说的话..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary btn-full">
+                                <i class="fas fa-paper-plane"></i> 发送爱的留言
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="message-list-wrap">
+                    <div class="message-wall" id="message-wall">
+                        <!-- 留言动态渲染 -->
+                    </div>
+                </div>
+            </div>
+        </section>
     </main>
 
     <footer>
+        <div class="footer-bg"></div>
         <div class="footer-content">
-            <p>&copy;小浩制作❤️</p>
-            <p>一起走过 <span id="footer-days">0</span> 天</p>
+            <div class="footer-heart">
+                <i class="fas fa-heart"></i>
+            </div>
+            <h3 class="footer-title">小浩 & 小梅</h3>
+            <p class="footer-sub">已相伴 <span id="footer-days" class="footer-days-num">0</span> 天，还要更久更久</p>
+            <div class="footer-divider">♡ ♡ ♡</div>
+            <p class="footer-copy">&copy; 2025 · 小浩制作 · 愿爱长久</p>
         </div>
     </footer>
 
-    <script src="script.js"></script>
-    <script>
-        // 修改表单提交逻辑
-        document.getElementById('message-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = {
-                name: e.target[0].value,
-                content: e.target[1].value
-            };
+    <!-- 回到顶部 -->
+    <button class="back-top" id="backTop" title="回到顶部">
+        <i class="fas fa-chevron-up"></i>
+    </button>
 
-            try {
-                // 替换为你的腾讯云服务器API地址
-                const response = await fetch('http://119.29.55.105:3000/api/messages', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-                if(response.ok) alert('留言提交成功！');
-            } catch (error) {
-                console.error('提交失败:', error);
-            }
-        });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
