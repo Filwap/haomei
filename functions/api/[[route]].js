@@ -53,26 +53,32 @@ async function initDB(db) {
       name TEXT NOT NULL,
       date TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
-    );
+    )
+  `);
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS messages (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       content TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
-    );
+    )
+  `);
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS photos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       url TEXT NOT NULL,
       caption TEXT DEFAULT '',
       created_at TEXT DEFAULT (datetime('now'))
-    );
+    )
+  `);
+  await db.exec(`
     CREATE TABLE IF NOT EXISTS videos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
       description TEXT DEFAULT '',
       url TEXT NOT NULL,
       created_at TEXT DEFAULT (datetime('now'))
-    );
+    )
   `);
 }
 
