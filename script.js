@@ -292,7 +292,7 @@ async function loadPhotosFromCloud() {
         // 在现有静态图片前面插入云端图片
         list.forEach(item => {
             const div = document.createElement('div');
-            div.className = 'gallery-item fade-in';
+            div.className = 'gallery-item visible fade-in';
             div.dataset.caption = item.caption || '';
             div.dataset.cloudId = item.id;
             div.innerHTML = `
@@ -546,7 +546,9 @@ function initScrollAnimations() {
         '.profile-card, .story-block, .qnav-card, ' +
         '.gallery-item, .video-card, .form-card, .section-header'
     ).forEach(function(el) {
-        el.classList.add('fade-in');
+        if (!el.classList.contains('visible')) {
+            el.classList.add('fade-in');
+        }
         observer.observe(el);
     });
 }
