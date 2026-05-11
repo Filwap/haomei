@@ -105,37 +105,27 @@ async function initDB(db) {
 async function handleLogin(request) {
   const body = await request.json();
   if (body.username === ADMIN_USER && body.password === ADMIN_PASS) {
-    // 生成简单 token（base64 编码，含过期时间）
-    const payload = { user: ADMIN_USER, exp: Date.now() + 24 * 3600 * 1000 };
-    const token = btoa(JSON.stringify(payload)) + '.' + await sign(JSON.stringify(payload));
+    // 简单 token（base64 + 时间戳）
+    const payload = { user: ADMIN_USER, exp: Date.now() + 7 * 24 * 3600 * 1000 }; // 7天有效
+    const token = btoa(JSON.stringify(payload));
     return json({ success: true, token });
   }
   return json({ success: false, error: '账号或密码错误' }, 401);
 }
 
-// 验证 token
-async function verifyToken(request) {
+// 验证 token（简化版）
+function verifyToken(request) {
   const auth = request.headers.get('Authorization') || '';
   const token = auth.replace('Bearer ', '').trim();
   if (!token) return false;
   try {
-    const [payloadB64] = token.split('.');
-    const payload = JSON.parse(atob(payloadB64));
+    const payload = JSON.parse(atob(token));
     if (payload.exp < Date.now()) return false;
-    return true;
-  } catch {
+    return payload.user === ADMIN_USER;
+  } catch (e) {
+    console.log('Token parse error:', e.message);
     return false;
   }
-}
-
-// 简单签名
-async function sign(data) {
-  const encoder = new TextEncoder();
-  const key = await crypto.subtle.importKey(
-    'raw', encoder.encode(JWT_SECRET), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
-  );
-  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
-  return btoa(String.fromCharCode(...new Uint8Array(sig)));
 }
 
 // ─────────────────────────────────────────────────────
