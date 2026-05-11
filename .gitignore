@@ -1,0 +1,16 @@
+# 依赖
+node_modules/
+package-lock.json
+
+# 原图备份（已压缩优化）
+photos/backup/
+
+# 开发工具
+.codebuddy/
+.wrangler/
+.workbuddy/
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
