@@ -1,7 +1,10 @@
 name = "haomei-api"
-# Cloudflare Pages Functions 项目（非独立 Worker）
-# main 字段已移除 — Pages 通过 functions/ 目录自动识别
+main = "worker.js"
 compatibility_date = "2024-01-01"
+
+# 静态资源目录（用于托管 HTML/JS/CSS/图片等）
+[assets]
+directory = "."
 
 # D1 数据库绑定
 [[d1_databases]]
