@@ -119,18 +119,42 @@ async function handleLogin(request) {
 function verifyToken(request) {
   const auth = request.headers.get('Authorization') || '';
   const token = auth.replace('Bearer ', '').trim();
-  if (!token || !token.includes('.')) return false;
+
+  if (!token) {
+    console.log('[DEBUG] No token provided');
+    return false;
+  }
+
+  if (!token.includes('.')) {
+    console.log('[DEBUG] Token format invalid (no dot):', token.substring(0, 30));
+    return false;
+  }
 
   try {
     const [timestamp, signature] = token.split('.');
     const ts = parseInt(timestamp);
+
+    if (isNaN(ts)) {
+      console.log('[DEBUG] Timestamp is not a number:', timestamp);
+      return false;
+    }
+
     // 检查是否过期（7天）
-    if (Date.now() - ts > 7 * 24 * 60 * 60 * 1000) return false;
+    if (Date.now() - ts > 7 * 24 * 60 * 60 * 1000) {
+      console.log('[DEBUG] Token expired. ts:', ts, 'now:', Date.now());
+      return false;
+    }
+
     // 验证签名
     const expectedSig = `${ADMIN_PASS.slice(0,4)}${ADMIN_USER}`;
-    return signature === expectedSig;
+    if (signature !== expectedSig) {
+      console.log('[DEBUG] Signature mismatch. Got:', signature, 'Expected:', expectedSig);
+      return false;
+    }
+
+    return true;
   } catch (e) {
-    console.log('Token verify error:', e.message);
+    console.log('[DEBUG] Token verify exception:', e.message);
     return false;
   }
 }
