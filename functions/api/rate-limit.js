@@ -42,6 +42,10 @@ export function checkRateLimit(ip, opts = {}) {
   return { ok: true };
 }
 
-// 注意: 不再使用 setInterval 自动清理（Workers 全局作用域不允许异步操作）
-// 清理由调用方在请求处理中按需触发，或依赖 Map 自然生命周期
+// 手动清理过期条目（可选调用）
 export function cleanup() {
+  const now = Date.now();
+  for (const [key, entry] of buckets) {
+    if (now > entry.resetAt) buckets.delete(key);
+  }
+}
