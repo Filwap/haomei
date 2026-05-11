@@ -38,17 +38,6 @@ export async function onRequest(context) {
     if (path === '/api/login' && method === 'POST') {
       return handleLogin(request);
     }
-    // 调试接口：检查 token 状态
-    if (path === '/api/debug' && method === 'GET') {
-      const auth = request.headers.get('Authorization') || '';
-      const token = auth.replace('Bearer ', '').trim();
-      return json({
-        hasToken: !!token,
-        tokenLength: token?.length,
-        tokenPrefix: token?.substring(0, 20),
-        headers: Object.fromEntries(request.headers.entries())
-      });
-    }
     if (path.startsWith('/api/anniversaries')) return handleAnniversaries(request, env, path);
     if (path.startsWith('/api/messages'))      return handleMessages(request, env, path);
     if (path.startsWith('/api/photos'))        return handlePhotos(request, env, path);
@@ -113,28 +102,35 @@ async function initDB(db) {
 // ─────────────────────────────────────────────────────
 // 登录
 // ─────────────────────────────────────────────────────
+// 登录
+// ─────────────────────────────────────────────────────
 async function handleLogin(request) {
   const body = await request.json();
   if (body.username === ADMIN_USER && body.password === ADMIN_PASS) {
-    // 简单 token（base64 + 时间戳）
-    const payload = { user: ADMIN_USER, exp: Date.now() + 7 * 24 * 3600 * 1000 }; // 7天有效
-    const token = btoa(JSON.stringify(payload));
-    return json({ success: true, token });
+    // 简单 token（时间戳 + 密钥的 hash）
+    const timestamp = Date.now();
+    const token = `${timestamp}.${ADMIN_PASS.slice(0,4)}${ADMIN_USER}`;
+    return json({ success: true, token, expires: 7 * 24 * 60 * 60 });
   }
   return json({ success: false, error: '账号或密码错误' }, 401);
 }
 
-// 验证 token（简化版）
+// 验证 token
 function verifyToken(request) {
   const auth = request.headers.get('Authorization') || '';
   const token = auth.replace('Bearer ', '').trim();
-  if (!token) return false;
+  if (!token || !token.includes('.')) return false;
+
   try {
-    const payload = JSON.parse(atob(token));
-    if (payload.exp < Date.now()) return false;
-    return payload.user === ADMIN_USER;
+    const [timestamp, signature] = token.split('.');
+    const ts = parseInt(timestamp);
+    // 检查是否过期（7天）
+    if (Date.now() - ts > 7 * 24 * 60 * 60 * 1000) return false;
+    // 验证签名
+    const expectedSig = `${ADMIN_PASS.slice(0,4)}${ADMIN_USER}`;
+    return signature === expectedSig;
   } catch (e) {
-    console.log('Token parse error:', e.message);
+    console.log('Token verify error:', e.message);
     return false;
   }
 }
@@ -195,9 +191,9 @@ async function handleMessages(request, env, path) {
     return json({ success: true, id: result.meta.last_row_id });
   }
 
-  // DELETE 需要登录（临时禁用验证，测试用）
+  // DELETE 需要登录
   if (method === 'DELETE') {
-    // if (!await verifyToken(request)) return json({ error: '未授权' }, 401);
+    if (!verifyToken(request)) return json({ error: '未授权' }, 401);
     const id = path.split('/').pop();
     await db.prepare('DELETE FROM messages WHERE id = ?').bind(id).run();
     return json({ success: true });
@@ -219,8 +215,8 @@ async function handlePhotos(request, env, path) {
     return json(results);
   }
 
-  // 以下需要登录（临时禁用验证，测试用）
-  // if (!await verifyToken(request)) return json({ error: '未授权' }, 401);
+  // 以下需要登录
+  if (!verifyToken(request)) return json({ error: '未授权' }, 401);
 
   // POST 新增
   if (method === 'POST') {
@@ -253,8 +249,8 @@ async function handleVideos(request, env, path) {
     return json(results);
   }
 
-  // 以下需要登录（临时禁用验证，测试用）
-  // if (!await verifyToken(request)) return json({ error: '未授权' }, 401);
+  // 以下需要登录
+  if (!verifyToken(request)) return json({ error: '未授权' }, 401);
 
   // POST 新增
   if (method === 'POST') {
