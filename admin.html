@@ -1,0 +1,1332 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>后台管理 · 小浩 & 小梅</title>
+    <link rel="icon" href="photos/favicon.ico" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* ── 变量 ── */
+        :root {
+            --rose: #e8637a;
+            --rose-light: #f2a0b0;
+            --rose-dark: #c0475c;
+            --rose-faint: #fdf0f2;
+            --rose-soft: #fce8ec;
+            --cream: #fffaf9;
+            --white: #ffffff;
+            --ink: #2a1a1e;
+            --muted: #7a5c62;
+            --subtle: #b89098;
+            --shadow-sm: 0 2px 12px rgba(200,80,100,0.08);
+            --shadow-md: 0 8px 32px rgba(200,80,100,0.12);
+            --radius: 16px;
+            --radius-sm: 8px;
+            --radius-pill: 100px;
+            --sans: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            --serif: 'Noto Serif SC', 'SimSun', serif;
+            --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--sans);
+            background: #f5eff0;
+            color: var(--ink);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ── 登录页 ── */
+        #login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #fdf0f2 0%, #fff5f7 50%, #fce8ec 100%);
+        }
+
+        .login-card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 3rem 2.5rem;
+            width: min(420px, 90vw);
+            box-shadow: 0 24px 80px rgba(200,80,100,0.15);
+            text-align: center;
+        }
+
+        .login-logo {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.2rem;
+            font-size: 1.5rem; color: white;
+            animation: heartPulse 2s ease-in-out infinite;
+        }
+
+        .login-title {
+            font-family: var(--serif);
+            font-size: 1.5rem;
+            color: var(--ink);
+            margin-bottom: 0.3rem;
+        }
+
+        .login-sub {
+            font-size: 0.85rem;
+            color: var(--subtle);
+            margin-bottom: 2rem;
+        }
+
+        .login-form .field {
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .login-form label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid rgba(232,99,122,0.2);
+            border-radius: var(--radius-sm);
+            font-family: var(--sans);
+            font-size: 0.9rem;
+            color: var(--ink);
+            background: var(--white);
+            outline: none;
+            transition: border-color var(--transition), box-shadow var(--transition);
+        }
+
+        .login-form input:focus {
+            border-color: var(--rose);
+            box-shadow: 0 0 0 3px rgba(232,99,122,0.12);
+        }
+
+        .login-err {
+            color: #c0475c;
+            font-size: 0.83rem;
+            margin-bottom: 0.8rem;
+            display: none;
+        }
+
+        .login-err.show { display: block; }
+
+        /* ── 管理页 ── */
+        #admin-page { display: none; }
+
+        /* 侧边栏 */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 240px;
+            background: var(--white);
+            border-right: 1px solid rgba(232,99,122,0.1);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-logo {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(232,99,122,0.1);
+            text-align: center;
+        }
+
+        .sidebar-logo .logo-icon {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 0.6rem;
+            color: white; font-size: 1.1rem;
+        }
+
+        .sidebar-logo h2 {
+            font-family: var(--serif);
+            font-size: 1rem;
+            color: var(--ink);
+        }
+
+        .sidebar-logo p {
+            font-size: 0.75rem;
+            color: var(--subtle);
+            margin-top: 0.2rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1rem 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            padding: 0.65rem 0.9rem;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all var(--transition);
+            border: none;
+            background: none;
+            width: 100%;
+            text-align: left;
+            font-family: var(--sans);
+        }
+
+        .nav-item i { font-size: 0.85rem; width: 16px; text-align: center; }
+
+        .nav-item:hover { background: var(--rose-soft); color: var(--rose); }
+
+        .nav-item.active {
+            background: var(--rose-soft);
+            color: var(--rose);
+            font-weight: 500;
+        }
+
+        .nav-sep {
+            height: 1px;
+            background: rgba(232,99,122,0.1);
+            margin: 0.5rem 0;
+        }
+
+        .sidebar-bottom {
+            padding: 1rem 0.75rem;
+            border-top: 1px solid rgba(232,99,122,0.1);
+        }
+
+        /* 主内容区 */
+        .admin-main {
+            margin-left: 240px;
+            flex: 1;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-header h1 {
+            font-family: var(--serif);
+            font-size: 1.6rem;
+            color: var(--ink);
+            margin-bottom: 0.3rem;
+        }
+
+        .page-header p {
+            font-size: 0.88rem;
+            color: var(--subtle);
+        }
+
+        /* 内容面板 */
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* 统计卡片 */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.4rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(232,99,122,0.08);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            background: var(--rose-soft);
+            color: var(--rose);
+            flex-shrink: 0;
+        }
+
+        .stat-info .num {
+            font-family: var(--serif);
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .stat-info .label {
+            font-size: 0.78rem;
+            color: var(--subtle);
+            margin-top: 0.2rem;
+        }
+
+        /* 卡片容器 */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 1.8rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(232,99,122,0.08);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-family: var(--serif);
+            font-size: 1.05rem;
+            color: var(--ink);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title i { color: var(--rose); font-size: 0.95rem; }
+
+        /* 表单 */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-row.single { grid-template-columns: 1fr; }
+        .form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .form-field label {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .form-field input,
+        .form-field textarea,
+        .form-field select {
+            padding: 0.7rem 0.9rem;
+            border: 1.5px solid rgba(232,99,122,0.2);
+            border-radius: var(--radius-sm);
+            font-family: var(--sans);
+            font-size: 0.88rem;
+            color: var(--ink);
+            background: var(--white);
+            outline: none;
+            transition: border-color var(--transition), box-shadow var(--transition);
+            width: 100%;
+        }
+
+        .form-field input:focus,
+        .form-field textarea:focus,
+        .form-field select:focus {
+            border-color: var(--rose);
+            box-shadow: 0 0 0 3px rgba(232,99,122,0.1);
+        }
+
+        .form-field textarea { min-height: 80px; resize: vertical; }
+
+        /* 按钮 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.65rem 1.4rem;
+            border: none;
+            border-radius: var(--radius-pill);
+            font-size: 0.87rem;
+            font-weight: 500;
+            font-family: var(--sans);
+            cursor: pointer;
+            transition: all var(--transition);
+            letter-spacing: 0.02em;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+            color: white;
+            box-shadow: 0 4px 14px rgba(232,99,122,0.28);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(232,99,122,0.36);
+        }
+
+        .btn-danger {
+            background: rgba(192,71,92,0.1);
+            color: var(--rose-dark);
+        }
+
+        .btn-danger:hover {
+            background: var(--rose-dark);
+            color: white;
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted);
+            border: 1px solid rgba(122,92,98,0.2);
+        }
+
+        .btn-ghost:hover {
+            background: var(--rose-faint);
+            color: var(--rose);
+            border-color: var(--rose-light);
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.9rem;
+            font-size: 0.8rem;
+        }
+
+        /* 列表 */
+        .item-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1.1rem;
+            background: var(--rose-faint);
+            border-radius: 10px;
+            border: 1px solid rgba(232,99,122,0.08);
+            transition: all var(--transition);
+        }
+
+        .item-row:hover {
+            border-color: var(--rose-light);
+            background: var(--rose-soft);
+        }
+
+        .item-row .item-info {
+            flex: 1;
+        }
+
+        .item-row .item-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: var(--ink);
+        }
+
+        .item-row .item-sub {
+            font-size: 0.78rem;
+            color: var(--subtle);
+            margin-top: 0.15rem;
+        }
+
+        .item-row .item-actions {
+            display: flex;
+            gap: 0.4rem;
+            flex-shrink: 0;
+        }
+
+        /* 照片网格 */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .photo-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            aspect-ratio: 4/3;
+            background: var(--rose-soft);
+        }
+
+        .photo-item img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .photo-item .photo-del {
+            position: absolute;
+            top: 6px; right: 6px;
+            width: 28px; height: 28px;
+            background: rgba(20,5,10,0.65);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0;
+            transition: opacity var(--transition);
+        }
+
+        .photo-item:hover .photo-del { opacity: 1; }
+
+        .photo-item .photo-caption {
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            background: linear-gradient(to top, rgba(20,5,10,0.7), transparent);
+            color: white;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.6rem;
+        }
+
+        /* 空状态 */
+        .empty {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: var(--subtle);
+        }
+
+        .empty i {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.4;
+            display: block;
+        }
+
+        .empty p { font-size: 0.88rem; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem; left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: rgba(42,26,30,0.92);
+            color: white;
+            padding: 0.7rem 1.4rem;
+            border-radius: var(--radius-pill);
+            font-size: 0.87rem;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(8px);
+            display: flex; align-items: center; gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast i { color: var(--rose-light); }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--subtle);
+            font-size: 0.88rem;
+        }
+
+        .loading i { animation: spin 1s linear infinite; margin-right: 0.4rem; }
+
+        /* 动画 */
+        @keyframes heartPulse {
+            0%,100% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: 60px;
+                flex-direction: row;
+                bottom: unset;
+                overflow: hidden;
+            }
+
+            .sidebar.mobile-open {
+                height: auto;
+            }
+
+            .admin-main {
+                margin-left: 0;
+                margin-top: 60px;
+                padding: 1.2rem;
+            }
+
+            .form-row { grid-template-columns: 1fr; }
+            .form-row.triple { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .stat-grid { grid-template-columns: 1fr 1fr; }
+            .photo-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════ 登录页 ═══════════════════ -->
+<div id="login-page">
+    <div class="login-card">
+        <div class="login-logo"><i class="fas fa-lock"></i></div>
+        <h1 class="login-title">后台管理</h1>
+        <p class="login-sub">小浩 & 小梅 · 专属管理空间</p>
+        <form class="login-form" id="login-form">
+            <div class="field">
+                <label>管理员账号</label>
+                <input type="text" id="login-user" placeholder="请输入账号" autocomplete="username">
+            </div>
+            <div class="field">
+                <label>管理员密码</label>
+                <input type="password" id="login-pass" placeholder="请输入密码" autocomplete="current-password">
+            </div>
+            <p class="login-err" id="login-err"><i class="fas fa-exclamation-circle"></i> <span></span></p>
+            <button type="submit" class="btn btn-primary" style="width:100%; margin-top:0.5rem;">
+                <i class="fas fa-sign-in-alt"></i> 进入管理后台
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- ═══════════════════ 管理页 ═══════════════════ -->
+<div id="admin-page">
+    <div class="admin-layout">
+
+        <!-- 侧边栏 -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-icon"><i class="fas fa-heart"></i></div>
+                <h2>管理后台</h2>
+                <p>小浩 & 小梅</p>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-panel="overview" onclick="switchPanel('overview', this)">
+                    <i class="fas fa-chart-pie"></i> 总览
+                </button>
+                <div class="nav-sep"></div>
+                <button class="nav-item" data-panel="anniversaries" onclick="switchPanel('anniversaries', this)">
+                    <i class="fas fa-calendar-heart"></i> 纪念日
+                </button>
+                <button class="nav-item" data-panel="photos" onclick="switchPanel('photos', this)">
+                    <i class="fas fa-images"></i> 照片墙
+                </button>
+                <button class="nav-item" data-panel="videos" onclick="switchPanel('videos', this)">
+                    <i class="fas fa-video"></i> 视频墙
+                </button>
+                <button class="nav-item" data-panel="messages" onclick="switchPanel('messages', this)">
+                    <i class="fas fa-comment-heart"></i> 留言板
+                </button>
+            </nav>
+            <div class="sidebar-bottom">
+                <button class="nav-item" onclick="goMainSite()">
+                    <i class="fas fa-external-link-alt"></i> 查看主站
+                </button>
+                <button class="nav-item" onclick="handleLogout()" style="color:#c0475c">
+                    <i class="fas fa-sign-out-alt"></i> 退出登录
+                </button>
+            </div>
+        </aside>
+
+        <!-- 主内容 -->
+        <main class="admin-main">
+
+            <!-- 总览 -->
+            <div class="panel active" id="panel-overview">
+                <div class="page-header">
+                    <h1><i class="fas fa-chart-pie" style="color:var(--rose);margin-right:0.4rem;font-size:1.2rem"></i>总览</h1>
+                    <p>欢迎回来，这里是你们的专属管理空间 ♡</p>
+                </div>
+                <div class="stat-grid" id="stat-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-calendar-heart"></i></div>
+                        <div class="stat-info"><div class="num" id="stat-ann">-</div><div class="label">纪念日</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-images"></i></div>
+                        <div class="stat-info"><div class="num" id="stat-photo">-</div><div class="label">照片</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-video"></i></div>
+                        <div class="stat-info"><div class="num" id="stat-video">-</div><div class="label">视频</div></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fas fa-comment-heart"></i></div>
+                        <div class="stat-info"><div class="num" id="stat-msg">-</div><div class="label">留言</div></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-info-circle"></i> 快速说明</div>
+                    <p style="font-size:0.88rem;color:var(--muted);line-height:1.9">
+                        · <b>纪念日</b>：添加各种重要日子，主站会自动倒计时显示<br>
+                        · <b>照片墙</b>：填写图片链接（推荐上传到图床后复制链接，如 imgbb.com）<br>
+                        · <b>视频墙</b>：填写 B站/YouTube/其他视频的分享链接<br>
+                        · <b>留言板</b>：查看和管理所有人的留言
+                    </p>
+                </div>
+            </div>
+
+            <!-- 纪念日 -->
+            <div class="panel" id="panel-anniversaries">
+                <div class="page-header">
+                    <h1><i class="fas fa-calendar-heart" style="color:var(--rose);margin-right:0.4rem;font-size:1.2rem"></i>纪念日管理</h1>
+                    <p>添加你们的重要日子</p>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-plus-circle"></i> 添加纪念日</div>
+                    <form id="ann-form">
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label>纪念日名称</label>
+                                <input type="text" id="ann-name" placeholder="例如：初次约会" required>
+                            </div>
+                            <div class="form-field">
+                                <label>日期</label>
+                                <input type="date" id="ann-date" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-heart"></i> 添加纪念日
+                        </button>
+                    </form>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-list-ul"></i> 已有纪念日</div>
+                    <div id="ann-list"><div class="loading"><i class="fas fa-spinner"></i>加载中...</div></div>
+                </div>
+            </div>
+
+            <!-- 照片墙 -->
+            <div class="panel" id="panel-photos">
+                <div class="page-header">
+                    <h1><i class="fas fa-images" style="color:var(--rose);margin-right:0.4rem;font-size:1.2rem"></i>照片墙管理</h1>
+                    <p>添加你们的美好瞬间</p>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-plus-circle"></i> 添加照片</div>
+                    <p style="font-size:0.82rem;color:var(--subtle);margin-bottom:1rem">
+                        💡 直接选择本地图片文件，自动上传并保存到照片墙
+                    </p>
+                    <form id="photo-form">
+                        <!-- 文件上传区域 -->
+                        <div class="form-row single" style="margin-bottom:1rem">
+                            <div class="form-field">
+                                <label>选择图片文件</label>
+                                <div id="photo-drop-zone" style="border:2px dashed rgba(232,99,122,0.35);border-radius:10px;padding:1.5rem;text-align:center;cursor:pointer;transition:all 0.25s ease;background:var(--rose-faint)">
+                                    <i class="fas fa-cloud-upload-alt" style="font-size:1.8rem;color:var(--rose-light);display:block;margin-bottom:0.5rem"></i>
+                                    <p style="font-size:0.85rem;color:var(--muted);margin:0">点击选择图片，或拖拽文件到此处</p>
+                                    <p style="font-size:0.75rem;color:var(--subtle);margin:0.3rem 0 0">支持 JPG、PNG、GIF、WebP，最大 32MB</p>
+                                    <input type="file" id="photo-file" accept="image/*" multiple style="display:none">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 预览区域 -->
+                        <div id="photo-preview-list" style="display:none;margin-bottom:1rem">
+                            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:0.6rem" id="photo-preview-grid"></div>
+                        </div>
+                        <!-- 上传进度 -->
+                        <div id="photo-upload-progress" style="display:none;margin-bottom:1rem">
+                            <div style="background:var(--rose-faint);border-radius:6px;height:8px;overflow:hidden">
+                                <div id="photo-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--rose-light),var(--rose));width:0%;transition:width 0.3s ease;border-radius:6px"></div>
+                            </div>
+                            <p id="photo-progress-text" style="font-size:0.8rem;color:var(--muted);margin-top:0.4rem;text-align:center"></p>
+                        </div>
+                        <div class="form-row single">
+                            <div class="form-field">
+                                <label>批量说明（可选，每张图片相同说明）</label>
+                                <input type="text" id="photo-caption" placeholder="例如：甜蜜时光">
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:0.75rem;align-items:center;flex-wrap:wrap">
+                            <button type="submit" class="btn btn-primary" id="photo-submit-btn">
+                                <i class="fas fa-upload"></i> 上传并添加到照片墙
+                            </button>
+                            <span id="photo-file-count" style="font-size:0.82rem;color:var(--subtle)"></span>
+                        </div>
+                        <div style="margin-top:1rem;padding:0.75rem 1rem;background:var(--rose-faint);border-radius:8px;font-size:0.8rem;color:var(--muted);line-height:1.7">
+                            <i class="fas fa-info-circle" style="color:var(--rose-light);margin-right:0.3rem"></i>
+                            也可以直接填写图片链接：<input type="url" id="photo-url" placeholder="https://..." style="margin-left:0.4rem;padding:0.3rem 0.6rem;border:1px solid rgba(232,99,122,0.25);border-radius:6px;font-size:0.82rem;width:min(300px,100%);outline:none">
+                            <button type="button" onclick="addPhotoByUrl()" class="btn btn-ghost btn-sm" style="margin-left:0.4rem">添加链接</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-th"></i> 已有照片</div>
+                    <div id="photo-list"><div class="loading"><i class="fas fa-spinner"></i>加载中...</div></div>
+                </div>
+            </div>
+
+            <!-- 视频墙 -->
+            <div class="panel" id="panel-videos">
+                <div class="page-header">
+                    <h1><i class="fas fa-video" style="color:var(--rose);margin-right:0.4rem;font-size:1.2rem"></i>视频墙管理</h1>
+                    <p>记录你们动态的美好时刻</p>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-plus-circle"></i> 添加视频</div>
+                    <p style="font-size:0.82rem;color:var(--subtle);margin-bottom:1rem">
+                        💡 支持 B站、YouTube、优酷等视频链接，填入分享链接即可
+                    </p>
+                    <form id="video-form">
+                        <div class="form-row">
+                            <div class="form-field">
+                                <label>视频标题</label>
+                                <input type="text" id="video-title" placeholder="例如：旅游合集" required>
+                            </div>
+                            <div class="form-field">
+                                <label>视频描述（可选）</label>
+                                <input type="text" id="video-desc" placeholder="记录我们美好的旅行时光">
+                            </div>
+                        </div>
+                        <div class="form-row single">
+                            <div class="form-field">
+                                <label>视频链接 URL</label>
+                                <input type="url" id="video-url" placeholder="https://www.bilibili.com/video/..." required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> 添加到视频墙
+                        </button>
+                    </form>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-list-ul"></i> 已有视频</div>
+                    <div id="video-list"><div class="loading"><i class="fas fa-spinner"></i>加载中...</div></div>
+                </div>
+            </div>
+
+            <!-- 留言板 -->
+            <div class="panel" id="panel-messages">
+                <div class="page-header">
+                    <h1><i class="fas fa-comment-heart" style="color:var(--rose);margin-right:0.4rem;font-size:1.2rem"></i>留言板管理</h1>
+                    <p>管理所有人的爱意留言</p>
+                </div>
+                <div class="card">
+                    <div class="card-title"><i class="fas fa-list-ul"></i> 所有留言</div>
+                    <div id="msg-list"><div class="loading"><i class="fas fa-spinner"></i>加载中...</div></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── 配置 ──────────────────────────────────────────────
+// 部署 Worker 后，把下面的 URL 改成你的 Worker 地址
+// 例如: https://haomei-api.你的用户名.workers.dev
+const API_BASE = 'https://haomei.cn.mt';
+
+// ── Token 管理 ────────────────────────────────────────
+let authToken = localStorage.getItem('hm_admin_token') || '';
+
+// ── 页面初始化 ────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    if (authToken) {
+        showAdminPage();
+    }
+
+    // 登录表单
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const user = document.getElementById('login-user').value.trim();
+        const pass = document.getElementById('login-pass').value.trim();
+        await handleLogin(user, pass);
+    });
+
+    // 纪念日表单
+    document.getElementById('ann-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const name = document.getElementById('ann-name').value.trim();
+        const date = document.getElementById('ann-date').value;
+        if (!name || !date) return;
+        await apiPost('/api/anniversaries', { name, date });
+        document.getElementById('ann-form').reset();
+        loadAnniversaries();
+        showToast('<i class="fas fa-check-circle"></i> 纪念日添加成功 ♡');
+    });
+
+    // 照片文件上传区域初始化
+    const dropZone = document.getElementById('photo-drop-zone');
+    const fileInput = document.getElementById('photo-file');
+    let selectedFiles = [];
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'var(--rose)';
+        dropZone.style.background = 'var(--rose-soft)';
+    });
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = 'rgba(232,99,122,0.35)';
+        dropZone.style.background = 'var(--rose-faint)';
+    });
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault();
+        dropZone.style.borderColor = 'rgba(232,99,122,0.35)';
+        dropZone.style.background = 'var(--rose-faint)';
+        handleFileSelect(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    });
+
+    fileInput.addEventListener('change', () => {
+        handleFileSelect(Array.from(fileInput.files));
+        fileInput.value = '';
+    });
+
+    function handleFileSelect(files) {
+        if (!files.length) return;
+        selectedFiles = [...selectedFiles, ...files];
+        updatePreview();
+    }
+
+    function updatePreview() {
+        const grid = document.getElementById('photo-preview-grid');
+        const list = document.getElementById('photo-preview-list');
+        const countEl = document.getElementById('photo-file-count');
+        grid.innerHTML = '';
+        if (!selectedFiles.length) { list.style.display = 'none'; countEl.textContent = ''; return; }
+        list.style.display = 'block';
+        countEl.textContent = `已选择 ${selectedFiles.length} 张`;
+        selectedFiles.forEach((file, i) => {
+            const url = URL.createObjectURL(file);
+            const div = document.createElement('div');
+            div.style.cssText = 'position:relative;border-radius:8px;overflow:hidden;aspect-ratio:4/3;background:var(--rose-soft)';
+            div.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover">
+                <button onclick="removeFile(${i})" style="position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(20,5,10,0.7);border:none;color:white;font-size:0.7rem;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="fas fa-times"></i></button>
+                <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.6),transparent);color:white;font-size:0.65rem;padding:0.3rem 0.4rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(file.name)}</div>`;
+            grid.appendChild(div);
+        });
+    }
+
+    window.removeFile = function(i) {
+        selectedFiles.splice(i, 1);
+        updatePreview();
+    };
+
+    // 照片表单提交（文件上传）
+    document.getElementById('photo-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!selectedFiles.length) {
+            showToast('<i class="fas fa-exclamation-circle"></i> 请先选择图片文件');
+            return;
+        }
+        const caption = document.getElementById('photo-caption').value.trim();
+        const submitBtn = document.getElementById('photo-submit-btn');
+        const progressWrap = document.getElementById('photo-upload-progress');
+        const progressBar = document.getElementById('photo-progress-bar');
+        const progressText = document.getElementById('photo-progress-text');
+
+        submitBtn.disabled = true;
+        progressWrap.style.display = 'block';
+
+        let successCount = 0;
+        const total = selectedFiles.length;
+
+        for (let i = 0; i < total; i++) {
+            const file = selectedFiles[i];
+            progressText.textContent = `正在上传第 ${i + 1} / ${total} 张：${file.name}`;
+            progressBar.style.width = `${Math.round((i / total) * 100)}%`;
+
+            try {
+                const imgUrl = await uploadToImgbb(file);
+                await apiPost('/api/photos', { url: imgUrl, caption });
+                successCount++;
+            } catch (err) {
+                console.error('上传失败', file.name, err);
+            }
+        }
+
+        progressBar.style.width = '100%';
+        progressText.textContent = `完成！成功上传 ${successCount} / ${total} 张`;
+
+        setTimeout(() => {
+            progressWrap.style.display = 'none';
+            progressBar.style.width = '0%';
+        }, 2000);
+
+        selectedFiles = [];
+        updatePreview();
+        document.getElementById('photo-caption').value = '';
+        submitBtn.disabled = false;
+        loadPhotos();
+        showToast(`<i class="fas fa-check-circle"></i> 成功上传 ${successCount} 张照片 ♡`);
+    });
+
+    // imgbb 上传函数（免费，无需注册，限32MB）
+    async function uploadToImgbb(file) {
+        // imgbb API key（你的专属 Key，无速率限制）
+        const IMGBB_KEY = '356cda741a6d220c0fa82fccf2addfc9';
+        const formData = new FormData();
+        formData.append('image', file);
+        const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
+            method: 'POST',
+            body: formData
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error?.message || '上传失败');
+        return data.data.url;
+    }
+
+    // 通过 URL 直接添加
+    window.addPhotoByUrl = async function() {
+        const urlInput = document.getElementById('photo-url');
+        const url = urlInput.value.trim();
+        const caption = document.getElementById('photo-caption').value.trim();
+        if (!url || !url.startsWith('http')) {
+            showToast('<i class="fas fa-exclamation-circle"></i> 请输入有效的图片链接');
+            return;
+        }
+        await apiPost('/api/photos', { url, caption });
+        urlInput.value = '';
+        loadPhotos();
+        showToast('<i class="fas fa-check-circle"></i> 照片链接添加成功 ♡');
+    };
+
+    // 视频表单
+    document.getElementById('video-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('video-title').value.trim();
+        const description = document.getElementById('video-desc').value.trim();
+        const url = document.getElementById('video-url').value.trim();
+        if (!title || !url) return;
+        await apiPost('/api/videos', { title, description, url });
+        document.getElementById('video-form').reset();
+        loadVideos();
+        showToast('<i class="fas fa-check-circle"></i> 视频添加成功 ♡');
+    });
+});
+
+// ── 登录 ──────────────────────────────────────────────
+async function handleLogin(username, password) {
+    const errEl = document.getElementById('login-err');
+    const errSpan = errEl.querySelector('span');
+    errEl.classList.remove('show');
+
+    try {
+        const res = await fetch(`${API_BASE}/api/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+            authToken = data.token;
+            localStorage.setItem('hm_admin_token', authToken);
+            showAdminPage();
+        } else {
+            errSpan.textContent = data.error || '账号或密码错误';
+            errEl.classList.add('show');
+        }
+    } catch (err) {
+        errSpan.textContent = '无法连接到服务器，请检查 API 地址配置';
+        errEl.classList.add('show');
+    }
+}
+
+function handleLogout() {
+    authToken = '';
+    localStorage.removeItem('hm_admin_token');
+    document.getElementById('admin-page').style.display = 'none';
+    document.getElementById('login-page').style.display = 'flex';
+}
+
+function showAdminPage() {
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('admin-page').style.display = 'block';
+    loadOverview();
+}
+
+// ── 面板切换 ──────────────────────────────────────────
+function switchPanel(name, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`panel-${name}`).classList.add('active');
+    btn.classList.add('active');
+
+    if (name === 'anniversaries') loadAnniversaries();
+    if (name === 'photos') loadPhotos();
+    if (name === 'videos') loadVideos();
+    if (name === 'messages') loadMessages();
+}
+
+function goMainSite() {
+    window.open('index.html', '_blank');
+}
+
+// ── 总览数据 ──────────────────────────────────────────
+async function loadOverview() {
+    try {
+        const [ann, photos, videos, msgs] = await Promise.all([
+            apiFetch('/api/anniversaries'),
+            apiFetch('/api/photos'),
+            apiFetch('/api/videos'),
+            apiFetch('/api/messages')
+        ]);
+        document.getElementById('stat-ann').textContent = ann.length;
+        document.getElementById('stat-photo').textContent = photos.length;
+        document.getElementById('stat-video').textContent = videos.length;
+        document.getElementById('stat-msg').textContent = msgs.length;
+    } catch (e) {
+        // 如果 API 未部署，显示 0
+        ['stat-ann','stat-photo','stat-video','stat-msg'].forEach(id => {
+            document.getElementById(id).textContent = '—';
+        });
+    }
+}
+
+// ── 纪念日 ───────────────────────────────────────────
+async function loadAnniversaries() {
+    const el = document.getElementById('ann-list');
+    el.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i>加载中...</div>';
+    try {
+        const list = await apiFetch('/api/anniversaries');
+        if (!list.length) {
+            el.innerHTML = '<div class="empty"><i class="fas fa-calendar-heart"></i><p>还没有纪念日，快去添加吧</p></div>';
+            return;
+        }
+        el.innerHTML = '';
+        const ul = document.createElement('div');
+        ul.className = 'item-list';
+        list.forEach(item => {
+            const d = new Date(item.date + 'T00:00:00');
+            const formatted = d.toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric' });
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <div class="item-info">
+                    <div class="item-name"><i class="fas fa-heart" style="color:var(--rose);margin-right:0.4rem;font-size:0.75rem"></i>${escHtml(item.name)}</div>
+                    <div class="item-sub">${formatted}</div>
+                </div>
+                <div class="item-actions">
+                    <button class="btn btn-danger btn-sm" onclick="delAnniversary(${item.id}, this)">
+                        <i class="fas fa-trash-alt"></i> 删除
+                    </button>
+                </div>`;
+            ul.appendChild(row);
+        });
+        el.appendChild(ul);
+    } catch (e) {
+        el.innerHTML = '<div class="empty"><i class="fas fa-wifi"></i><p>加载失败，请检查网络</p></div>';
+    }
+}
+
+async function delAnniversary(id, btn) {
+    if (!confirm('确定删除这个纪念日吗？')) return;
+    btn.disabled = true;
+    await apiDelete(`/api/anniversaries/${id}`);
+    loadAnniversaries();
+    showToast('<i class="fas fa-trash-alt"></i> 纪念日已删除');
+}
+
+// ── 照片 ─────────────────────────────────────────────
+async function loadPhotos() {
+    const el = document.getElementById('photo-list');
+    el.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i>加载中...</div>';
+    try {
+        const list = await apiFetch('/api/photos');
+        if (!list.length) {
+            el.innerHTML = '<div class="empty"><i class="fas fa-images"></i><p>还没有照片，快去添加吧</p></div>';
+            return;
+        }
+        const grid = document.createElement('div');
+        grid.className = 'photo-grid';
+        list.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'photo-item';
+            div.innerHTML = `
+                <img src="${escHtml(item.url)}" alt="${escHtml(item.caption)}" loading="lazy" onerror="this.src='photos/favicon.ico'">
+                <button class="photo-del" onclick="delPhoto(${item.id}, this)" title="删除"><i class="fas fa-times"></i></button>
+                ${item.caption ? `<div class="photo-caption">${escHtml(item.caption)}</div>` : ''}`;
+            grid.appendChild(div);
+        });
+        el.innerHTML = '';
+        el.appendChild(grid);
+    } catch (e) {
+        el.innerHTML = '<div class="empty"><i class="fas fa-wifi"></i><p>加载失败，请检查网络</p></div>';
+    }
+}
+
+async function delPhoto(id, btn) {
+    if (!confirm('确定删除这张照片吗？')) return;
+    btn.disabled = true;
+    await apiDelete(`/api/photos/${id}`);
+    loadPhotos();
+    showToast('<i class="fas fa-trash-alt"></i> 照片已删除');
+}
+
+// ── 视频 ─────────────────────────────────────────────
+async function loadVideos() {
+    const el = document.getElementById('video-list');
+    el.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i>加载中...</div>';
+    try {
+        const list = await apiFetch('/api/videos');
+        if (!list.length) {
+            el.innerHTML = '<div class="empty"><i class="fas fa-video"></i><p>还没有视频，快去添加吧</p></div>';
+            return;
+        }
+        el.innerHTML = '';
+        const ul = document.createElement('div');
+        ul.className = 'item-list';
+        list.forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <div class="item-info">
+                    <div class="item-name"><i class="fas fa-play-circle" style="color:var(--rose);margin-right:0.4rem;font-size:0.75rem"></i>${escHtml(item.title)}</div>
+                    <div class="item-sub">${escHtml(item.description || '')} · <a href="${escHtml(item.url)}" target="_blank" style="color:var(--rose)">查看链接</a></div>
+                </div>
+                <div class="item-actions">
+                    <button class="btn btn-danger btn-sm" onclick="delVideo(${item.id}, this)">
+                        <i class="fas fa-trash-alt"></i> 删除
+                    </button>
+                </div>`;
+            ul.appendChild(row);
+        });
+        el.appendChild(ul);
+    } catch (e) {
+        el.innerHTML = '<div class="empty"><i class="fas fa-wifi"></i><p>加载失败，请检查网络</p></div>';
+    }
+}
+
+async function delVideo(id, btn) {
+    if (!confirm('确定删除这个视频吗？')) return;
+    btn.disabled = true;
+    await apiDelete(`/api/videos/${id}`);
+    loadVideos();
+    showToast('<i class="fas fa-trash-alt"></i> 视频已删除');
+}
+
+// ── 留言 ─────────────────────────────────────────────
+async function loadMessages() {
+    const el = document.getElementById('msg-list');
+    el.innerHTML = '<div class="loading"><i class="fas fa-spinner"></i>加载中...</div>';
+    try {
+        const list = await apiFetch('/api/messages');
+        if (!list.length) {
+            el.innerHTML = '<div class="empty"><i class="fas fa-comment-heart"></i><p>还没有留言</p></div>';
+            return;
+        }
+        el.innerHTML = '';
+        const ul = document.createElement('div');
+        ul.className = 'item-list';
+        list.forEach(item => {
+            const d = new Date(item.created_at);
+            const dateStr = d.toLocaleString('zh-CN');
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <div class="item-info">
+                    <div class="item-name">${escHtml(item.name)}</div>
+                    <div class="item-sub" style="margin-top:0.3rem;color:var(--muted);font-size:0.85rem">${escHtml(item.content)}</div>
+                    <div class="item-sub">${dateStr}</div>
+                </div>
+                <div class="item-actions">
+                    <button class="btn btn-danger btn-sm" onclick="delMessage(${item.id}, this)">
+                        <i class="fas fa-trash-alt"></i> 删除
+                    </button>
+                </div>`;
+            ul.appendChild(row);
+        });
+        el.appendChild(ul);
+    } catch (e) {
+        el.innerHTML = '<div class="empty"><i class="fas fa-wifi"></i><p>加载失败，请检查网络</p></div>';
+    }
+}
+
+async function delMessage(id, btn) {
+    if (!confirm('确定删除这条留言吗？')) return;
+    btn.disabled = true;
+    await apiDelete(`/api/messages/${id}`);
+    loadMessages();
+    showToast('<i class="fas fa-trash-alt"></i> 留言已删除');
+}
+
+// ── API 工具函数 ──────────────────────────────────────
+async function apiFetch(path) {
+    const res = await fetch(`${API_BASE}${path}`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+async function apiPost(path, data) {
+    const res = await fetch(`${API_BASE}${path}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(data)
+    });
+    return res.json();
+}
+
+async function apiDelete(path) {
+    const res = await fetch(`${API_BASE}${path}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    });
+    return res.json();
+}
+
+// ── Toast ─────────────────────────────────────────────
+let toastTimer;
+function showToast(html) {
+    const toast = document.getElementById('toast');
+    toast.innerHTML = html;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+// ── XSS 防护 ──────────────────────────────────────────
+function escHtml(str) {
+    return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+</script>
+</body>
+</html>

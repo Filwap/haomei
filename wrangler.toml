@@ -1,0 +1,9 @@
+name = "haomei-api"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# D1 数据库绑定
+[[d1_databases]]
+binding = "DB"
+database_name = "haomei-db"
+database_id = "d027ab17-09c4-419e-b554-375c8f2227d6"
