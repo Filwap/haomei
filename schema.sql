@@ -29,3 +29,9 @@ CREATE TABLE IF NOT EXISTS videos (
   url TEXT NOT NULL,
   created_at TEXT DEFAULT (datetime('now'))
 );
+
+-- ── 性能索引（新增） ───────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_photos_created ON photos(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_created ON messages(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_videos_created ON videos(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_anniversaries_date ON anniversaries(date ASC);
