@@ -855,6 +855,13 @@ const API_BASE = '';  // Pages Functions 使用相对路径
 // ── Token 管理 ────────────────────────────────────────
 let authToken = localStorage.getItem('hm_admin_token') || '';
 
+// 检测旧格式 token（base64 JSON），自动清除
+if (authToken && authToken.startsWith('eyJ')) {
+    console.log('[DEBUG] 检测到旧格式 token，自动清除');
+    localStorage.removeItem('hm_admin_token');
+    authToken = '';
+}
+
 // ── 页面初始化 ────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     if (authToken) {
