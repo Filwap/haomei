@@ -388,10 +388,18 @@ function setupLightbox() {
     });
 
     function openLightbox(src, caption) {
+        // ★ 图片切换淡入淡出：避免生硬闪烁
+        lbImg.style.opacity = '0';
         lbImg.src = src;
         lbCaption.textContent = caption;
         lightbox.classList.add('active');
         document.body.style.overflow = 'hidden';
+        // 等图片加载完成后再淡入
+        if (lbImg.complete) {
+            lbImg.style.opacity = '1';
+        } else {
+            lbImg.onload = function() { lbImg.style.opacity = '1'; };
+        }
     }
 
     function closeLightbox() {
@@ -669,19 +677,21 @@ function showWelcomeModal() {
     var closeBtn = document.getElementById('close-welcome');
     if (!modal || !overlay || !envelope || !closeBtn) return;
 
-    // 弹窗入场（带缩放弹性）
+    // 弹窗入场（GPU 友好的缩放弹性）
     setTimeout(function() {
         modal.style.display = 'block';
         overlay.style.display = 'block';
+        // 初始状态（不可见，略微缩小）
         modal.style.opacity = '0';
-        modal.style.transform = 'translate(-50%, -50%) scale(0.88)';
+        modal.style.transform = 'translate(-50%, -50%) scale(0.88) translateZ(0)';
         overlay.style.opacity = '0';
+        // ★ 双 rAF 确保浏览器在下一帧统一应用 transition
         requestAnimationFrame(function() {
             requestAnimationFrame(function() {
-                modal.style.transition = 'opacity 0.55s ease, transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                overlay.style.transition = 'opacity 0.5s ease';
+                modal.style.transition = 'opacity 0.55s cubic-bezier(0.25,0.46,0.45,0.94), transform 0.55s cubic-bezier(0.34,1.56,0.64,1)';
+                overlay.style.transition = 'opacity 0.5s cubic-bezier(0.25,0.46,0.45,0.94)';
                 modal.style.opacity = '1';
-                modal.style.transform = 'translate(-50%, -50%) scale(1)';
+                modal.style.transform = 'translate(-50%, -50%) scale(1) translateZ(0)';
                 overlay.style.opacity = '1';
             });
         });
@@ -698,10 +708,10 @@ function showWelcomeModal() {
 
     // 点击"进入"按钮 → 关闭弹窗
     const close = function() {
-        modal.style.transition = 'opacity 0.45s ease, transform 0.45s cubic-bezier(0.55, 0, 0.2, 1)';
+        modal.style.transition = 'opacity 0.45s cubic-bezier(0.55, 0, 0, 1), transform 0.45s cubic-bezier(0.55, 0, 0.2, 1)';
         modal.style.opacity = '0';
-        modal.style.transform = 'translate(-50%, -50%) scale(0.92) translateY(-10px)';
-        overlay.style.transition = 'opacity 0.4s ease';
+        modal.style.transform = 'translate(-50%, -50%) scale(0.92) translateY(-10px) translateZ(0)';
+        overlay.style.transition = 'opacity 0.4s cubic-bezier(0.25,0.46,0.45,0.94)';
         overlay.style.opacity = '0';
         setTimeout(function() {
             modal.style.display = 'none';

@@ -7,22 +7,25 @@
     <meta name="description" content="小浩和小梅的爱情纪念网站，记录每一个美好瞬间">
     <link rel="icon" href="photos/favicon.ico" type="image/x-icon">
 
-    <!-- 预连接关键域名 -->
+    <!-- 预连接关键域名（提前建立 TCP 连接） -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="cdnjs.cloudflare.com" crossorigin>
+    <link rel="dns-prefetch" href="https://i.ibb.co">
 
-    <!-- Google Fonts: display=swap 避免字体阻塞渲染 -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- Google Fonts: 异步加载，避免阻塞渲染 (display=swap → FOUT 替代 FOIT) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap"></noscript>
 
-    <!-- Font Awesome: 仅引入 needed 图标以减小体积 (使用 CDN 精简版) -->
+    <!-- Font Awesome: 异步加载（非渲染关键资源） -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
 
     <!-- 关键 CSS 内联：首屏样式优先 -->
     <link rel="stylesheet" href="styles.css">
 
-    <!-- 预加载 Hero 背景图（最大视觉元素） -->
+    <!-- 预加载 Hero 背景图（最大视觉元素，LCP 候选） -->
     <link rel="preload" as="image" href="photos/c.jpg" importance="high">
 </head>
 <body>
@@ -97,7 +100,7 @@
     <header id="hero">
         <div class="hero-bg">
             <div class="hero-overlay"></div>
-            <img src="photos/c.jpg" class="hero-img" alt="封面" loading="lazy">
+            <img src="photos/c.jpg" class="hero-img" alt="封面" loading="lazy" width="1920" height="1280">
         </div>
         <div class="hero-content">
             <div class="hero-badge">我们在一起</div>
@@ -129,7 +132,7 @@
             <div class="couple-wrap">
                 <div class="profile-card" data-side="left">
                     <div class="profile-avatar">
-                        <img src="photos/d.jpg" alt="小梅">
+                        <img src="photos/d.jpg" alt="小梅" width="150" height="150">
                         <div class="avatar-ring"></div>
                     </div>
                     <div class="profile-info">
@@ -159,7 +162,7 @@
 
                 <div class="profile-card" data-side="right">
                     <div class="profile-avatar">
-                        <img src="photos/f.jpg" alt="小浩">
+                        <img src="photos/f.jpg" alt="小浩" width="150" height="150">
                         <div class="avatar-ring"></div>
                     </div>
                     <div class="profile-info">

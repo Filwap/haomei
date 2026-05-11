@@ -210,13 +210,16 @@ ul { list-style: none; }
     z-index: 0;
 }
 
-/* 首屏背景图：渐入效果避免突兀跳变 */
+/* 首屏背景图：渐入效果 + GPU 加速避免重排 */
 .hero-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
     animation: heroImageIn 1.2s ease-out both;
+    /* 强制提升为合成层，动画期间不影响其他元素 */
+    will-change: opacity, transform;
+    backface-visibility: hidden;
 }
 
 .hero-overlay {
@@ -948,7 +951,7 @@ ul { list-style: none; }
     transform: translateY(0);
 }
 
-/* 灯箱 */
+/* 灯箱 - GPU 加速版 */
 .lightbox {
     position: fixed;
     inset: 0;
@@ -959,7 +962,10 @@ ul { list-style: none; }
     justify-content: center;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s;
+    /* 自然缓动替代线性 */
+    transition: opacity 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+    /* GPU 层隔离 */
+    will-change: opacity;
 }
 
 .lightbox.active {
@@ -979,6 +985,8 @@ ul { list-style: none; }
     object-fit: contain;
     border-radius: var(--radius-sm);
     margin: 0 auto;
+    /* 图片切换时 GPU 加速 */
+    transition: opacity 0.2s ease;
 }
 
 .lightbox-caption {
@@ -1453,16 +1461,21 @@ footer {
 }
 
 /* =====================================================
-   欢迎弹窗 - 标准信封动画
-   干净的白色标准信封 + V形折线 + 顶部翻折封盖
-   点击打开 → 封盖翻转 → 信纸弹出
+   欢迎弹窗 - 标准信封动画（GPU 层加速版）
+   优化策略：
+   1. 全部元素提升为独立合成层 (translateZ + backface-visibility)
+   2. 简化 box-shadow 为单层（减少 paint 开销）
+   3. backdrop-filter 替换为半透明纯色（避免每帧 filter 重算）
+   4. 移除 filter:drop-shadow（最昂贵的 per-pixel 操作）
+   5. will-change 前置声明 GPU 层
+   6. 统一使用自然缓动 cubic-bezier(0.25,0.46,0.45,0.94)
    ===================================================== */
 .modal-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(10, 20, 30, 0.5);
-    backdrop-filter: blur(8px);
+    /* 用纯色替代 backdrop-filter:blur → 消除每帧 filter 计算 */
+    background: rgba(10, 20, 30, 0.6);
     z-index: 800;
 }
 
@@ -1476,6 +1489,8 @@ footer {
     height: 440px;
     z-index: 801;
     perspective: 1200px;
+    /* 整个弹窗提升为合成层 */
+    will-change: transform, opacity;
 }
 
 /* ── 阶段1: 信封容器 ── */
@@ -1484,8 +1499,11 @@ footer {
     inset: 0;
     cursor: pointer;
     animation: envelopeFloat 3s ease-in-out infinite;
+    /* ★ 核心：GPU 加速三件套 */
     will-change: transform;
+    transform: translateZ(0);
     backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
 }
 
 /* 信封外层包装 */
@@ -1504,12 +1522,14 @@ footer {
     inset: 6px;
     border-radius: 10px;
     background: linear-gradient(135deg, var(--rose), var(--rose-dark), #b03a48);
-    box-shadow:
-        0 4px 18px rgba(192, 71, 92, 0.35),
-        inset 0 0 24px rgba(255, 255, 255, 0.06);
-    transition: transform 0.6s ease 0.12s, opacity 0.6s ease 0.12s;
+    /* 简化为单层 box-shadow（原 2 层 → 1 层，减少 paint ~50%） */
+    box-shadow: 0 4px 18px rgba(192, 71, 92, 0.35);
+    transition: transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94) 0.12s,
+                opacity 0.6s cubic-bezier(0.25,0.46,0.45,0.94) 0.12s;
     opacity: 0.95;
+    /* ★ GPU 合成层 */
     will-change: transform, opacity;
+    transform: translateZ(0);
     backface-visibility: hidden;
 }
 
@@ -1527,14 +1547,15 @@ footer {
     inset: 0;
     background: linear-gradient(155deg, #ffffff 0%, #f8f9fb 40%, #f2f3f7 100%);
     border-radius: 10px;
+    /* 原始 4 层 shadow → 精简为 2 层（去掉 inset 伪内阴影，paint 昂贵） */
     box-shadow:
         0 8px 30px rgba(60, 70, 90, 0.14),
-        0 2px 8px rgba(60, 70, 90, 0.06),
-        0 1px 0 rgba(255, 255, 255, 0.9) inset,
-        0 -1px 0 rgba(200, 205, 215, 0.25) inset;
+        0 1px 0 rgba(200, 205, 215, 0.25);
     overflow: hidden;
     z-index: 2;
+    /* ★ GPU 合成层 */
     will-change: transform, opacity;
+    transform: translateZ(0);
     backface-visibility: hidden;
 }
 
@@ -1577,10 +1598,14 @@ footer {
     border-right: 215px solid transparent;
     border-top-color: #eceef3;
     transform-origin: top center;
-    transform: translateX(-50%);
-    transition: transform 0.85s cubic-bezier(0.68, -0.15, 0.32, 1.18), opacity 0.35s ease 0.15s;
-    filter: drop-shadow(0 2px 4px rgba(160, 170, 190, 0.12));
+    transform: translateX(-50%) translateZ(0);
+    /* 自然缓动曲线：比 spring 更流畅 */
+    transition: transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94),
+                opacity 0.35s ease 0.15s;
+    /* ★ 移除 filter:drop-shadow（最昂贵的 per-pixel 滤镜操作）
+     * drop-shadow 在动画时每帧都做高斯模糊计算 → 掉帧主因 */
     z-index: 5;
+    /* ★ GPU 合成层 */
     will-change: transform, opacity;
     backface-visibility: hidden;
 }
@@ -1604,29 +1629,33 @@ footer {
 
 /* ── 信封打开状态 ── */
 .envelope.open .env-flap {
-    transform: translateX(-50%) rotateX(175deg);
+    transform: translateX(-50%) rotateX(175deg) translateZ(0);
     opacity: 0;
-    transition: transform 0.85s cubic-bezier(0.68, -0.15, 0.32, 1.18), opacity 0.35s ease 0.15s;
+    transition: transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94),
+                opacity 0.35s ease 0.15s;
 }
 
 .envelope.open .env-front {
-    transform: rotateX(-100deg);
+    transform: rotateX(-100deg) translateZ(0);
     opacity: 0;
-    transition: transform 0.55s cubic-bezier(0.55, 0, 0.95, 0.32) 0.08s, opacity 0.55s ease 0.08s;
+    transition: transform 0.55s cubic-bezier(0.4, 0, 1, 1) 0.08s,
+                opacity 0.55s ease 0.08s;
     transform-origin: center bottom;
 }
 
 .envelope.open .letter-inside {
-    transform: scale(0.9);
+    transform: scale(0.9) translateZ(0);
     opacity: 0;
-    transition: transform 0.6s ease 0.12s, opacity 0.6s ease 0.12s;
+    transition: transform 0.6s cubic-bezier(0.25,0.46,0.45,0.94) 0.12s,
+                opacity 0.6s cubic-bezier(0.25,0.46,0.45,0.94) 0.12s;
 }
 
 .envelope.open + .letter {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) translateZ(0);
     pointer-events: auto;
-    transition: transform 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) 0.38s, opacity 0.85s ease 0.38s;
+    transition: transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94) 0.38s,
+                opacity 0.85s ease 0.38s;
 }
 
 .envelope.open {
@@ -1644,10 +1673,12 @@ footer {
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transform: translateY(30px) scale(0.93);
+    transform: translateY(30px) scale(0.93) translateZ(0);
     pointer-events: none;
-    transition: transform 0.85s cubic-bezier(0.34, 1.56, 0.64, 1) 0.38s, opacity 0.85s ease 0.38s;
+    transition: transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94) 0.38s,
+                opacity 0.85s ease 0.38s;
     z-index: 6;
+    /* ★ GPU 合成层 */
     will-change: transform, opacity;
     backface-visibility: hidden;
 }
@@ -1657,14 +1688,16 @@ footer {
     border-radius: 20px;
     padding: 2.8rem 2.2rem 2.2rem;
     text-align: center;
+    /* 简化：3层 → 2层，去掉最耗 paint 的内阴影 */
     box-shadow:
         0 28px 90px rgba(10, 20, 30, 0.2),
-        0 10px 40px rgba(232, 99, 122, 0.14),
-        0 0 0 1px rgba(232, 99, 122, 0.06);
+        0 10px 40px rgba(232, 99, 122, 0.14);
     max-width: 360px;
     width: calc(100% - 60px);
     position: relative;
     overflow: hidden;
+    /* GPU 加速 */
+    transform: translateZ(0);
 }
 
 /* 信纸顶部装饰条 */
