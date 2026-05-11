@@ -651,13 +651,17 @@
         /* ── 响应式 ── */
         /* 平板及以下 */
         @media (max-width: 768px) {
-            .mobile-header { display: flex; }
+            .mobile-header { display: flex; height: 48px; padding: 0 0.75rem; gap: 0.5rem; }
+
+            .mobile-header .mh-icon { width: 30px; height: 30px; font-size: 0.75rem; }
+            .mobile-header .mh-title { font-size: 0.85rem; }
+            .mobile-header .mh-btn { width: 32px; height: 32px; font-size: 0.82rem; border-radius: 8px; }
 
             .sidebar {
-                width: 260px;
+                width: 250px;
                 height: 100%;
                 top: 0;
-                left: -270px;
+                left: -260px;
                 transition: left 0.32s cubic-bezier(0.4,0,0.2,1);
                 box-shadow: none;
                 z-index: 99;
@@ -671,11 +675,11 @@
 
             .admin-main {
                 margin-left: 0;
-                margin-top: 56px;
-                padding: 1rem;
+                margin-top: 48px;
+                padding: 0.7rem;
             }
 
-            .form-row { grid-template-columns: 1fr; }
+            .form-row { grid-template-columns: 1fr; gap: 0.5rem; }
             .form-row.triple { grid-template-columns: 1fr; }
 
             /* 统计卡片可点击 */
@@ -690,137 +694,144 @@
 
             /* 页面标题缩小 */
             .page-header h1 {
-                font-size: 1.25rem;
+                font-size: 1.05rem;
             }
             .page-header p {
-                font-size: 0.8rem;
+                font-size: 0.72rem;
             }
             .page-header {
-                margin-bottom: 1.2rem;
+                margin-bottom: 0.8rem;
             }
 
             /* 卡片更紧凑 */
             .card {
-                padding: 1.2rem;
-                border-radius: 12px;
-                margin-bottom: 1rem;
+                padding: 0.85rem;
+                border-radius: 10px;
+                margin-bottom: 0.7rem;
             }
 
             .card-title {
-                font-size: 0.92rem;
-                margin-bottom: 0.8rem;
+                font-size: 0.82rem;
+                margin-bottom: 0.6rem;
             }
 
             /* 表单控件紧凑化 */
             .form-field input,
             .form-field textarea,
             .form-field select {
-                font-size: 0.84rem;
-                padding: 0.6rem 0.75rem;
+                font-size: 0.78rem;
+                padding: 0.5rem 0.65rem;
+                border-radius: 6px;
             }
 
             .form-field label {
-                font-size: 0.76rem;
+                font-size: 0.7rem;
+                margin-bottom: 0.25rem;
             }
 
             .form-field textarea {
-                min-height: 65px;
+                min-height: 55px;
             }
 
             /* 按钮紧凑 */
             .btn {
-                padding: 0.55rem 1.1rem;
-                font-size: 0.82rem;
+                padding: 0.45rem 0.9rem;
+                font-size: 0.76rem;
+                border-radius: 8px;
             }
 
             /* 统计卡片紧凑 */
             .stat-card {
-                padding: 1rem;
-                gap: 0.7rem;
-            }
-
-            .stat-icon {
-                width: 40px; height: 40px;
-                font-size: 1rem;
+                padding: 0.7rem 0.75rem;
+                gap: 0.55rem;
                 border-radius: 10px;
             }
 
+            .stat-icon {
+                width: 34px; height: 34px;
+                font-size: 0.85rem;
+                border-radius: 8px;
+            }
+
             .stat-info .num {
-                font-size: 1.3rem;
+                font-size: 1.1rem;
             }
 
             .stat-info .label {
-                font-size: 0.72rem;
+                font-size: 0.65rem;
             }
 
             /* 列表行紧凑 */
             .item-row {
-                padding: 0.7rem 0.85rem;
-                gap: 0.7rem;
-                border-radius: 8px;
+                padding: 0.55rem 0.65rem;
+                gap: 0.5rem;
+                border-radius: 7px;
             }
 
             .item-row .item-name {
-                font-size: 0.84rem;
+                font-size: 0.76rem;
             }
 
             .item-row .item-sub {
-                font-size: 0.72rem;
+                font-size: 0.66rem;
             }
 
             /* 按钮组紧凑 */
             .item-actions .btn-sm {
-                padding: 0.3rem 0.65rem;
-                font-size: 0.74rem;
+                padding: 0.22rem 0.5rem;
+                font-size: 0.68rem;
+                border-radius: 5px;
             }
 
             /* 照片网格 */
             .photo-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                gap: 0.5rem;
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+                gap: 0.4rem;
             }
 
             /* 登录页适配 */
             .login-card {
-                padding: 2rem 1.5rem;
-                width: min(360px, 88vw);
+                padding: 1.6rem 1.2rem;
+                width: min(340px, 88vw);
+                border-radius: 18px;
             }
 
             .login-logo {
-                width: 54px; height: 54px;
-                font-size: 1.3rem;
-                margin-bottom: 1rem;
+                width: 46px; height: 46px;
+                font-size: 1.1rem;
+                margin-bottom: 0.8rem;
             }
 
             .login-title {
-                font-size: 1.3rem;
+                font-size: 1.15rem;
             }
 
             .login-sub {
-                font-size: 0.8rem;
-                margin-bottom: 1.5rem;
+                font-size: 0.74rem;
+                margin-bottom: 1.2rem;
             }
 
             .login-form input {
-                font-size: 0.86rem;
-                padding: 0.6rem 0.85rem;
+                font-size: 0.8rem;
+                padding: 0.5rem 0.7rem;
+                border-radius: 7px;
             }
 
             .login-err {
-                font-size: 0.78rem;
+                font-size: 0.72rem;
             }
 
             /* 空状态紧凑 */
             .empty {
-                padding: 1.8rem 1rem;
+                padding: 1.4rem 0.8rem;
             }
 
             .empty i {
-                font-size: 1.6rem;
+                font-size: 1.35rem;
             }
 
             .empty p {
-                font-size: 0.82rem;
+                font-size: 0.74rem;
             }
 
             /* Toast 适配小屏 */
@@ -828,39 +839,68 @@
                 max-width: calc(100vw - 2rem);
                 white-space: normal;
                 text-align: center;
+                font-size: 0.78rem;
+                padding: 0.5rem 1rem;
             }
 
             /* 加载状态 */
             .loading {
-                padding: 1.2rem;
-                font-size: 0.82rem;
+                padding: 1rem;
+                font-size: 0.76rem;
             }
+
+            /* stat-grid 基础两列 */
+            .stat-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 0.55rem;
+            }
+
+            /* 侧边栏 logo 缩小 */
+            .sidebar-logo { padding: 1rem; }
+            .sidebar-logo .logo-icon { width: 38px; height: 38px; font-size: 0.9rem; margin-bottom: 0.4rem; }
+            .sidebar-logo h2 { font-size: 0.88rem; }
+            .sidebar-logo p { font-size: 0.68rem; }
+
+            /* 导航菜单项缩小 */
+            .nav-item { padding: 0.55rem 1rem; font-size: 0.78rem; gap: 0.45rem; }
+            .nav-item i { font-size: 0.82rem; width: 18px; text-align: center; }
+            .nav-item .nav-badge { font-size: 0.6rem; padding: 1px 5px; }
+
+            /* 底部用户区缩小 */
+            .sidebar-user { padding: 0.8rem 1rem; }
+            .sidebar-user .user-name { font-size: 0.76rem; }
+            .sidebar-user .user-role { font-size: 0.64rem; }
         }
 
         /* iPhone 大屏手机优化 (428px - 480px): iPhone 14/15 Pro Max 等 */
         @media (max-width: 480px) and (min-width: 400px) {
             .stat-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 0.6rem;
+                gap: 0.5rem;
             }
 
             .photo-grid {
                 grid-template-columns: repeat(3, 1fr);
+                gap: 0.35rem;
             }
         }
 
         /* 小屏手机 (<= 400px): iPhone SE / mini 等 */
         @media (max-width: 400px) {
-            .stat-grid { grid-template-columns: 1fr 1fr; }
-            .photo-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+            .stat-grid { grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+            .photo-grid { grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 0.3rem; }
 
             .admin-main {
-                padding: 0.8rem;
+                padding: 0.6rem;
             }
 
             .card {
-                padding: 1rem;
+                padding: 0.7rem;
             }
+
+            .btn { padding: 0.4rem 0.8rem; font-size: 0.72rem; }
+            .form-field input, .form-field textarea, .form-field select { font-size: 0.75rem; padding: 0.45rem 0.6rem; }
+            .page-header h1 { font-size: 0.98rem; }
         }
     </style>
 </head>
