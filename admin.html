@@ -849,10 +849,8 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── 配置 ──────────────────────────────────────────────
-// 部署 Worker 后，把下面的 URL 改成你的 Worker 地址
-// Worker 地址: https://haomei-api.lxbtip-ddnscom.workers.dev
-const API_BASE = 'https://haomei-api.lxbtip-ddnscom.workers.dev';
+// 部署后，API 会自动绑定到同一域名
+const API_BASE = '';  // Pages Functions 使用相对路径
 
 // ── Token 管理 ────────────────────────────────────────
 let authToken = localStorage.getItem('hm_admin_token') || '';

@@ -3,9 +3,8 @@
    数据存储: Cloudflare Worker API + D1 数据库
    ===================================================== */
 
-// ── 配置：部署 Worker 后修改此地址 ───────────────────────
-// Worker 地址: https://haomei-api.lxbtip-ddnscom.workers.dev
-const API_BASE = 'https://haomei-api.lxbtip-ddnscom.workers.dev';
+// ── 配置：API 使用相对路径（Pages Functions） ───────────────────────
+const API_BASE = '';
 
 // ── 全局常量 ───────────────────────────────────────────
 const LOVE_START = new Date('2025-04-17');
