@@ -239,8 +239,20 @@ async function handlePhotos(request, env, path) {
     return json(results);
   }
 
-  // 以下需要登录
-  if (!verifyToken(request)) return json({ error: '未授权' }, 401);
+  // 以下需要登录（带调试信息）
+  const tokenValid = verifyToken(request);
+  if (!tokenValid) {
+    const auth = request.headers.get('Authorization') || '';
+    return json({
+      error: '未授权',
+      debug: {
+        hasAuth: !!auth,
+        authPrefix: auth.substring(0, 30),
+        method: method,
+        path: path
+      }
+    }, 401);
+  }
 
   // POST 新增
   if (method === 'POST') {
