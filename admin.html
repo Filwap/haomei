@@ -17,8 +17,13 @@
     <link rel="icon" href="photos/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Google Fonts: 异步加载，避免阻塞渲染 -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap"></noscript>
+    <!-- Font Awesome: 异步加载（非渲染关键资源） -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
     <style>
         /* ── 变量 ── */
         :root {
@@ -135,6 +140,71 @@
 
         /* ── 管理页 ── */
         #admin-page { display: none; }
+
+        /* 移动端顶栏 */
+        .mobile-header {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 56px;
+            background: var(--white);
+            border-bottom: 1px solid rgba(232,99,122,0.1);
+            z-index: 110;
+            align-items: center;
+            padding: 0 1rem;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .mobile-header .mh-logo {
+            display: flex; align-items: center; gap: 0.5rem;
+            flex: 1; min-width: 0;
+        }
+
+        .mobile-header .mh-icon {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--rose), var(--rose-dark));
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; flex-shrink: 0;
+        }
+
+        .mobile-header .mh-title {
+            font-family: var(--serif); font-size: 0.95rem;
+            color: var(--ink); font-weight: 600;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .mobile-header .mh-actions {
+            display: flex; gap: 0.4rem; flex-shrink: 0;
+        }
+
+        .mh-btn {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            border: none;
+            background: var(--rose-faint);
+            color: var(--rose);
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            transition: all var(--transition);
+        }
+
+        .mh-btn:hover { background: var(--rose-soft); }
+        .mh-btn:active { transform: scale(0.92); }
+
+        /* 遮罩 */
+        .nav-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(20,5,10,0.35);
+            z-index: 98;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .nav-overlay.show { display: block; opacity: 1; }
 
         /* 侧边栏 */
         .admin-layout {
@@ -580,26 +650,42 @@
 
         /* 响应式 */
         @media (max-width: 768px) {
+            .mobile-header { display: flex; }
+
             .sidebar {
-                width: 100%;
-                height: 60px;
-                flex-direction: row;
-                bottom: unset;
-                overflow: hidden;
+                width: 260px;
+                height: 100%;
+                top: 0;
+                left: -270px;
+                transition: left 0.32s cubic-bezier(0.4,0,0.2,1);
+                box-shadow: none;
+                z-index: 99;
+                border-right: none;
             }
 
             .sidebar.mobile-open {
-                height: auto;
+                left: 0;
+                box-shadow: var(--shadow-md);
             }
 
             .admin-main {
                 margin-left: 0;
-                margin-top: 60px;
+                margin-top: 56px;
                 padding: 1.2rem;
             }
 
             .form-row { grid-template-columns: 1fr; }
             .form-row.triple { grid-template-columns: 1fr; }
+
+            /* 统计卡片可点击 */
+            .stat-card {
+                cursor: pointer;
+                transition: all var(--transition);
+            }
+            .stat-card:active {
+                transform: scale(0.97);
+                background: var(--rose-faint);
+            }
         }
 
         @media (max-width: 480px) {
@@ -635,6 +721,26 @@
 
 <!-- ═══════════════════ 管理页 ═══════════════════ -->
 <div id="admin-page">
+
+    <!-- 移动端顶栏 -->
+    <div class="mobile-header" id="mobile-header">
+        <div class="mh-logo">
+            <div class="mh-icon"><i class="fas fa-heart"></i></div>
+            <span class="mh-title" id="mh-panel-name">总览</span>
+        </div>
+        <div class="mh-actions">
+            <button class="mh-btn" onclick="goMainSite()" title="查看主站">
+                <i class="fas fa-external-link-alt"></i>
+            </button>
+            <button class="mh-btn" id="mh-menu-btn" onclick="toggleMobileNav()" title="菜单">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 导航遮罩 -->
+    <div class="nav-overlay" id="nav-overlay" onclick="toggleMobileNav()"></div>
+
     <div class="admin-layout">
 
         <!-- 侧边栏 -->
@@ -1399,6 +1505,59 @@ function escHtml(str) {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 }
+
+// ── 移动端导航（手机端修复） ─────────────────────────
+function toggleMobileNav() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('nav-overlay');
+    const menuBtn = document.getElementById('mh-menu-btn');
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('show');
+    // 切换图标
+    if (sidebar.classList.contains('mobile-open')) {
+        menuBtn.innerHTML = '<i class="fas fa-times"></i>';
+    } else {
+        menuBtn.innerHTML = '<i class="fas fa-bars"></i>';
+    }
+}
+
+// 面板名称映射（用于移动端顶栏显示）
+const panelNames = {
+    overview: '总览',
+    anniversaries: '纪念日',
+    photos: '照片墙',
+    videos: '视频墙',
+    messages: '留言板'
+};
+
+// 覆写 switchPanel：增加移动端行为 + 统计卡片点击跳转
+const _origSwitchPanel = switchPanel;
+switchPanel = function(name, btn) {
+    _origSwitchPanel(name, btn);
+    // 更新移动端顶栏标题
+    document.getElementById('mh-panel-name').textContent = panelNames[name] || name;
+    // 关闭侧边栏抽屉
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar.classList.contains('mobile-open') && window.innerWidth <= 768) {
+        toggleMobileNav();
+    }
+};
+
+// 统计卡片点击 → 跳转对应面板（解决"点卡片不跳转"问题）
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        const statCards = document.querySelectorAll('.stat-card');
+        statCards.forEach((card, idx) => {
+            const targets = ['anniversaries', 'photos', 'videos', 'messages'];
+            if (targets[idx]) {
+                card.addEventListener('click', () => {
+                    const navBtn = document.querySelector(`.nav-item[data-panel="${targets[idx]}"]`);
+                    switchPanel(targets[idx], navBtn);
+                });
+            }
+        });
+    }, 100);
+});
 </script>
 </body>
 </html>

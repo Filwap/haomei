@@ -79,7 +79,7 @@ export function validateCredentials(body, env) {
 
   // 从环境变量读取，支持明文或 bcrypt 哈希
   const adminUser = env.ADMIN_USER || 'admin';
-  const adminPass = env.ADMIN_PASS || 'haomei2025';
+  const adminPass = env.ADMIN_PASS || '010403';
 
   return (username === adminUser && password === adminPass)
     ? { ok: true }
