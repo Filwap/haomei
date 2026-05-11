@@ -3,7 +3,7 @@
 ## 架构概览
 
 ```
-浏览器访问 haomei.cc.cd
+浏览器访问 haomei.cn.mt
     → Cloudflare Pages（托管静态网站）
     → Cloudflare Worker（后端 API）
     → Cloudflare D1（数据库）
@@ -16,7 +16,7 @@
 ## 第一步：准备工作
 
 1. 注册 Cloudflare 账号：https://dash.cloudflare.com/sign-up
-2. 确保 `haomei.cc.cd` 的 DNS 已托管在 Cloudflare（已确认 ✅）
+2. 确保 `haomei.cn.mt` 的 DNS 已托管在 Cloudflare（已确认 ✅）
 
 ---
 
@@ -102,7 +102,7 @@ const API_BASE = 'https://haomei-api.你的用户名.workers.dev';
 
 1. Pages 部署完成后，进入 Pages 项目 → **Custom domains**
 2. 点 **Set up a custom domain**
-3. 输入：`haomei.cc.cd`
+3. 输入：`haomei.cn.mt`
 4. 因为 DNS 已在 Cloudflare，会自动添加 CNAME 记录
 5. 等待几分钟生效
 
@@ -110,8 +110,8 @@ const API_BASE = 'https://haomei-api.你的用户名.workers.dev';
 
 ## 第八步：验证是否正常
 
-1. 访问 `https://haomei.cc.cd` → 看到主页 ✅
-2. 访问 `https://haomei.cc.cd/admin.html` → 看到登录页 ✅
+1. 访问 `https://haomei.cn.mt` → 看到主页 ✅
+2. 访问 `https://haomei.cn.mt/admin.html` → 看到登录页 ✅
 3. 用你设置的账号密码登录后台，添加一条纪念日
 4. 刷新主页，看是否显示出来 ✅
 

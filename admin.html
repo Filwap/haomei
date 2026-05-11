@@ -1136,7 +1136,7 @@ async function loadAnniversaries() {
                     <div class="item-sub">${formatted}</div>
                 </div>
                 <div class="item-actions">
-                    <button class="btn btn-danger btn-sm" onclick="delAnniversary(${item.id}, this)">
+                    <button class="btn btn-danger btn-sm" onclick="delAnniversary('${item.id}', this)">
                         <i class="fas fa-trash-alt"></i> 删除
                     </button>
                 </div>`;
@@ -1151,9 +1151,14 @@ async function loadAnniversaries() {
 async function delAnniversary(id, btn) {
     if (!confirm('确定删除这个纪念日吗？')) return;
     btn.disabled = true;
-    await apiDelete(`/api/anniversaries/${id}`);
-    loadAnniversaries();
-    showToast('<i class="fas fa-trash-alt"></i> 纪念日已删除');
+    try {
+        await apiDelete(`/api/anniversaries/${id}`);
+        loadAnniversaries();
+        showToast('<i class="fas fa-trash-alt"></i> 纪念日已删除');
+    } catch (err) {
+        btn.disabled = false;
+        showToast('<i class="fas fa-exclamation-circle"></i> 删除失败：' + err.message);
+    }
 }
 
 // ── 照片 ─────────────────────────────────────────────
@@ -1173,7 +1178,7 @@ async function loadPhotos() {
             div.className = 'photo-item';
             div.innerHTML = `
                 <img src="${escHtml(item.url)}" alt="${escHtml(item.caption)}" loading="lazy" onerror="this.src='photos/favicon.ico'">
-                <button class="photo-del" onclick="delPhoto(${item.id}, this)" title="删除"><i class="fas fa-times"></i></button>
+                <button class="photo-del" onclick="delPhoto('${item.id}', this)" title="删除"><i class="fas fa-times"></i></button>
                 ${item.caption ? `<div class="photo-caption">${escHtml(item.caption)}</div>` : ''}`;
             grid.appendChild(div);
         });
@@ -1187,9 +1192,14 @@ async function loadPhotos() {
 async function delPhoto(id, btn) {
     if (!confirm('确定删除这张照片吗？')) return;
     btn.disabled = true;
-    await apiDelete(`/api/photos/${id}`);
-    loadPhotos();
-    showToast('<i class="fas fa-trash-alt"></i> 照片已删除');
+    try {
+        await apiDelete(`/api/photos/${id}`);
+        loadPhotos();
+        showToast('<i class="fas fa-trash-alt"></i> 照片已删除');
+    } catch (err) {
+        btn.disabled = false;
+        showToast('<i class="fas fa-exclamation-circle"></i> 删除失败：' + err.message);
+    }
 }
 
 // ── 视频 ─────────────────────────────────────────────
@@ -1214,7 +1224,7 @@ async function loadVideos() {
                     <div class="item-sub">${escHtml(item.description || '')} · <a href="${escHtml(item.url)}" target="_blank" style="color:var(--rose)">查看链接</a></div>
                 </div>
                 <div class="item-actions">
-                    <button class="btn btn-danger btn-sm" onclick="delVideo(${item.id}, this)">
+                    <button class="btn btn-danger btn-sm" onclick="delVideo('${item.id}', this)">
                         <i class="fas fa-trash-alt"></i> 删除
                     </button>
                 </div>`;
@@ -1229,9 +1239,14 @@ async function loadVideos() {
 async function delVideo(id, btn) {
     if (!confirm('确定删除这个视频吗？')) return;
     btn.disabled = true;
-    await apiDelete(`/api/videos/${id}`);
-    loadVideos();
-    showToast('<i class="fas fa-trash-alt"></i> 视频已删除');
+    try {
+        await apiDelete(`/api/videos/${id}`);
+        loadVideos();
+        showToast('<i class="fas fa-trash-alt"></i> 视频已删除');
+    } catch (err) {
+        btn.disabled = false;
+        showToast('<i class="fas fa-exclamation-circle"></i> 删除失败：' + err.message);
+    }
 }
 
 // ── 留言 ─────────────────────────────────────────────
@@ -1259,7 +1274,7 @@ async function loadMessages() {
                     <div class="item-sub">${dateStr}</div>
                 </div>
                 <div class="item-actions">
-                    <button class="btn btn-danger btn-sm" onclick="delMessage(${item.id}, this)">
+                    <button class="btn btn-danger btn-sm" onclick="delMessage('${item.id}', this)">
                         <i class="fas fa-trash-alt"></i> 删除
                     </button>
                 </div>`;
@@ -1274,9 +1289,14 @@ async function loadMessages() {
 async function delMessage(id, btn) {
     if (!confirm('确定删除这条留言吗？')) return;
     btn.disabled = true;
-    await apiDelete(`/api/messages/${id}`);
-    loadMessages();
-    showToast('<i class="fas fa-trash-alt"></i> 留言已删除');
+    try {
+        await apiDelete(`/api/messages/${id}`);
+        loadMessages();
+        showToast('<i class="fas fa-trash-alt"></i> 留言已删除');
+    } catch (err) {
+        btn.disabled = false;
+        showToast('<i class="fas fa-exclamation-circle"></i> 删除失败：' + err.message);
+    }
 }
 
 // ── API 工具函数 ──────────────────────────────────────
@@ -1297,6 +1317,10 @@ async function apiPost(path, data) {
         },
         body: JSON.stringify(data)
     });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `请求失败 (${res.status})`);
+    }
     return res.json();
 }
 
@@ -1305,6 +1329,10 @@ async function apiDelete(path) {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${authToken}` }
     });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `删除失败 (${res.status})`);
+    }
     return res.json();
 }
 
