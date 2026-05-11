@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>后台管理 · 小浩 & 小梅</title>
+    <script>
+    // 强制清除旧格式token（在所有其他脚本之前执行，绕过缓存）
+    (function(){
+        var t = localStorage.getItem('hm_admin_token');
+        if (t && (t.startsWith('eyJ') || t.length > 200)) {
+            console.log('[FORCE] 清除旧格式 token');
+            localStorage.removeItem('hm_admin_token');
+        }
+    })();
+    </script>
     <link rel="icon" href="photos/favicon.ico" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
