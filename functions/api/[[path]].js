@@ -53,39 +53,50 @@ export async function onRequest(context) {
 // 数据库初始化
 // ─────────────────────────────────────────────────────
 async function initDB(db) {
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS anniversaries (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      date TEXT NOT NULL,
-      created_at TEXT DEFAULT (datetime('now'))
-    );
-  `);
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS messages (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      content TEXT NOT NULL,
-      created_at TEXT DEFAULT (datetime('now'))
-    );
-  `);
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS photos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      url TEXT NOT NULL,
-      caption TEXT DEFAULT '',
-      created_at TEXT DEFAULT (datetime('now'))
-    );
-  `);
-  await db.exec(`
-    CREATE TABLE IF NOT EXISTS videos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      description TEXT DEFAULT '',
-      url TEXT NOT NULL,
-      created_at TEXT DEFAULT (datetime('now'))
-    );
-  `);
+  try {
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS anniversaries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        date TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `).run();
+  } catch(e) { console.log('Table anniversaries exists or error:', e.message); }
+
+  try {
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        content TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `).run();
+  } catch(e) { console.log('Table messages exists or error:', e.message); }
+
+  try {
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS photos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        url TEXT NOT NULL,
+        caption TEXT DEFAULT '',
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `).run();
+  } catch(e) { console.log('Table photos exists or error:', e.message); }
+
+  try {
+    await db.prepare(`
+      CREATE TABLE IF NOT EXISTS videos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT DEFAULT '',
+        url TEXT NOT NULL,
+        created_at TEXT DEFAULT (datetime('now'))
+      )
+    `).run();
+  } catch(e) { console.log('Table videos exists or error:', e.message); }
 }
 
 // ─────────────────────────────────────────────────────
