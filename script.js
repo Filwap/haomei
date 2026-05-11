@@ -1,9 +1,10 @@
 ﻿/* =====================================================
    情侣纪念网站 · 全功能 JS（云端版）
    数据存储: Cloudflare Worker API + D1 数据库
+   性能优化: 懒加载、请求合并、事件委托
    ===================================================== */
 
-// ── 配置：API 使用相对路径（Pages Functions） ───────────────────────
+// ── 配置：API 使用相对路径（Workers） ───────────────────────
 const API_BASE = '';
 
 // ── 全局常量 ───────────────────────────────────────────
@@ -11,6 +12,9 @@ const LOVE_START = new Date('2025-04-17');
 
 // ── DOMContentLoaded ──────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+    // 标记 JS 已加载，启用动画
+    document.body.classList.add('js-ready');
+
     initNav();
     initHero();
     initMusic();
@@ -18,11 +22,17 @@ document.addEventListener('DOMContentLoaded', () => {
     initAnniversaries();
     initGallery();
     initMessages();
+    // 延迟执行非关键初始化（提升首屏渲染速度）
+    requestIdleCallback ? requestIdleCallback(initNonCritical) : setTimeout(initNonCritical, 100);
+});
+
+// 非关键功能延迟加载
+function initNonCritical() {
     initScrollAnimations();
     initMouseEffects();
     initBackTop();
     showWelcomeModal();
-});
+}
 
 // =====================================================
 // 导航栏
@@ -41,6 +51,18 @@ function initNav() {
 
     toggle && toggle.addEventListener('click', () => {
         links.classList.toggle('open');
+        // 切换图标动画（汉堡 ↔ X）
+        toggle.classList.toggle('active');
+    });
+
+    // 点击导航外部区域关闭移动端菜单
+    document.addEventListener('click', e => {
+        if (links.classList.contains('open') &&
+            !e.target.closest('.nav-links') &&
+            !e.target.closest('#navToggle')) {
+            links.classList.remove('open');
+            toggle && toggle.classList.remove('active');
+        }
     });
 
     navAnchors.forEach(a => {
@@ -217,7 +239,7 @@ function addDateCard(name, date, cloudId) {
     if (!container) return;
 
     const card = document.createElement('div');
-    card.className = 'date-card fade-in';
+    card.className = 'date-card visible';
     card.dataset.name = name;
     card.dataset.date = date;
     if (cloudId) card.dataset.cloudId = cloudId;
@@ -272,11 +294,10 @@ function calculateCountdowns() {
 // 照片墙（云端版 + 静态照片保留）
 // =====================================================
 function initGallery() {
-    // 先加载云端动态照片
-    loadPhotosFromCloud();
-
-    // 静态照片灯箱
+    // 先绑定静态照片灯箱（立即可用）
     setupLightbox();
+    // 然后异步加载云端动态照片（加载后追加到前面）
+    loadPhotosFromCloud();
 }
 
 async function loadPhotosFromCloud() {
@@ -291,25 +312,39 @@ async function loadPhotosFromCloud() {
 
         // 在现有静态图片前面插入云端图片
         list.forEach(item => {
+            var imgSrc = normalizeImgUrl(escHtml(item.url));
             const div = document.createElement('div');
-            div.className = 'gallery-item visible fade-in';
+            div.className = 'gallery-item visible';
             div.dataset.caption = item.caption || '';
             div.dataset.cloudId = item.id;
             div.innerHTML = `
-                <img src="${escHtml(item.url)}" alt="${escHtml(item.caption)}" loading="lazy" onerror="this.parentElement.style.display='none'">
-                <div class="gallery-overlay">
-                    <i class="fas fa-expand-alt"></i>
-                    <p>${escHtml(item.caption)}</p>
+                <img src="${imgSrc}" alt="${escHtml(item.caption)}" loading="lazy"
+                     onerror="this.style.display='none'; this.nextElementSibling?.style.display='flex'">
+                <div class="gallery-overlay" style="display:none;align-items:center;justify-content:center">
+                    <span style="color:#fff;font-size:0.8rem">加载失败</span>
                 </div>`;
             grid.insertBefore(div, grid.firstChild);
-            requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('visible')));
         });
 
-        // 重新绑定灯箱
+        // 重新绑定灯箱（包含新插入的云端照片）
         setupLightbox();
     } catch (e) {
-        // API 未部署时静默失败，只显示静态图片
+        console.warn('[Gallery] 云端照片加载失败，仅显示静态照片:', e.message);
     }
+}
+
+// 修正 imgbb 等图床的 URL：将页面链接转为图片直链
+function normalizeImgUrl(url) {
+    if (!url) return url;
+    // ibb.co 页面链接 → 尝试转为直链
+    // 页面格式: https://ibb.co/xxxxx 或 https://ibb.co/GQm412xQ
+    // 直链格式: https://i.ibb.co/xxxxx/image.ext
+    var ibbMatch = url.match(/^(https?:\/\/)(www\.)?ibb\.co\/([a-zA-Z0-9]+)$/);
+    if (ibbMatch) {
+        // 无法从页面链接推导出完整文件名，尝试常见模式
+        return 'https://i.ibb.co/' + ibbMatch[3] + '.jpg';
+    }
+    return url;
 }
 
 function setupLightbox() {
@@ -323,18 +358,30 @@ function setupLightbox() {
 
     if (!lightbox) return;
 
-    var currentIndex = 0;
+    // 收集所有图片信息（含云端+静态）
     var images = [];
-
-    items.forEach(function(item, i) {
+    items.forEach(function(item) {
         var img = item.querySelector('img');
+        if (!img || !img.src) return;
         var caption = item.dataset.caption || '';
-        images.push({ src: img ? img.src : '', caption: caption });
+        images.push({ src: img.src, caption: caption });
+    });
 
-        // 清除旧事件（克隆替换）
+    if (images.length === 0) return;
+
+    // 清除旧事件监听器：使用 cloneNode 模式
+    items.forEach(function(item) {
         var newItem = item.cloneNode(true);
         item.parentNode.replaceChild(newItem, item);
-        newItem.addEventListener('click', function() {
+    });
+
+    // 重新查询（clone 后元素已替换）
+    var currentItems = document.querySelectorAll('.gallery-item');
+    var currentIndex = 0;
+
+    currentItems.forEach(function(item, i) {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
             currentIndex = i;
             openLightbox(images[i].src, images[i].caption);
         });
@@ -389,7 +436,7 @@ async function loadVideosFromCloud() {
         list.forEach(item => {
             const embedUrl = convertToEmbedUrl(item.url);
             const div = document.createElement('div');
-            div.className = 'video-card fade-in';
+            div.className = 'video-card visible';
             div.innerHTML = `
                 <div class="video-thumb">
                     <div class="video-wrapper">
@@ -515,7 +562,7 @@ function addMessageEl(name, date, content, cloudId) {
 
     var avatar = (name || '?').charAt(0).toUpperCase();
     var el = document.createElement('div');
-    el.className = 'message fade-in';
+    el.className = 'message visible';
     if (cloudId) el.dataset.cloudId = cloudId;
 
     el.innerHTML = '<div class="message-header">' +
@@ -554,9 +601,12 @@ function initScrollAnimations() {
 }
 
 // =====================================================
-// 鼠标特效
+// 鼠标特效（仅在非触屏设备启用）
 // =====================================================
 function initMouseEffects() {
+    // 触屏设备不启用鼠标特效（节省性能+避免触摸问题）
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) return;
+
     var texts = ['❤爱小梅❤', '❤爱小浩❤', '❤抱抱小浩❤', '❤抱抱小梅❤'];
     var idx = 0;
 

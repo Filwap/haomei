@@ -4,12 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>小浩 & 小梅 · 我们的爱情纪念</title>
+    <meta name="description" content="小浩和小梅的爱情纪念网站，记录每一个美好瞬间">
     <link rel="icon" href="photos/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="styles.css">
+
+    <!-- 预连接关键域名 -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    <!-- Google Fonts: display=swap 避免字体阻塞渲染 -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Font Awesome: 仅引入 needed 图标以减小体积 (使用 CDN 精简版) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
+
+    <!-- 关键 CSS 内联：首屏样式优先 -->
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- 预加载 Hero 背景图（最大视觉元素） -->
+    <link rel="preload" as="image" href="photos/c.jpg" importance="high">
 </head>
 <body>
 

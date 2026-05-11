@@ -44,6 +44,8 @@
 
 html {
     scroll-behavior: smooth;
+    /* 优化滚动性能 */
+    overflow-x: hidden;
 }
 
 body {
@@ -51,17 +53,31 @@ body {
     background: var(--cream);
     color: var(--ink);
     line-height: 1.7;
-    cursor: url('鼠标指针/2526-backpack-and-skater-kitty-cursor.svg') 0 0, auto;
     overflow-x: hidden;
+    /* 避免未样式化内容闪烁 (FOUC) */
+    visibility: visible;
 }
 
-a, button, [onclick], [role="button"] {
-    cursor: url('鼠标指针/2526-backpack-and-skater-kitty-pointer.svg') 0 0, pointer;
+/* JS 加载完成前隐藏动画元素，避免布局跳动 */
+body:not(.js-ready) .fade-in {
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* 触屏设备不使用自定义光标（节省性能+避免触摸问题） */
+    body {
+        cursor: url('鼠标指针/2526-backpack-and-skater-kitty-cursor.svg') 0 0, auto;
+    }
+    a, button, [onclick], [role="button"] {
+        cursor: url('鼠标指针/2526-backpack-and-skater-kitty-pointer.svg') 0 0, pointer;
+    }
 }
 
 img {
     display: block;
     max-width: 100%;
+    /* 防止图片溢出导致水平滚动 */
+    height: auto;
 }
 
 a {
@@ -82,6 +98,8 @@ ul { list-style: none; }
     z-index: 500;
     height: var(--nav-h);
     transition: background var(--transition), box-shadow var(--transition);
+    /* 硬件加速 */
+    will-change: background, box-shadow;
 }
 
 #mainNav.scrolled {
@@ -162,6 +180,17 @@ ul { list-style: none; }
     transition: all var(--transition);
 }
 
+/* 汉堡 → X 动画 */
+.nav-toggle.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 4.5px);
+}
+.nav-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+.nav-toggle.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -4.5px);
+}
+
 /* =====================================================
    Hero 首屏
    ===================================================== */
@@ -181,11 +210,13 @@ ul { list-style: none; }
     z-index: 0;
 }
 
+/* 首屏背景图：渐入效果避免突兀跳变 */
 .hero-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     object-position: center;
+    animation: heroImageIn 1.2s ease-out both;
 }
 
 .hero-overlay {
@@ -846,6 +877,8 @@ ul { list-style: none; }
     gap: 1rem;
     max-width: 1200px;
     margin: 0 auto;
+    /* 性能优化：限制浏览器重排范围 */
+    contain: content;
 }
 
 .gallery-item--wide {
@@ -1784,6 +1817,11 @@ footer {
     to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes heroImageIn {
+    from { opacity: 0; transform: scale(1.03); }
+    to { opacity: 1; transform: scale(1); }
+}
+
 @keyframes heartPulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.1); }
@@ -1847,8 +1885,22 @@ footer {
 }
 
 /* =====================================================
-   入场动画
+   加载骨架屏
    ===================================================== */
+.skeleton {
+    background: linear-gradient(90deg,
+        var(--rose-faint) 25%,
+        var(--cream) 50%,
+        var(--rose-faint) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeletonShimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
 .fade-in {
     opacity: 0;
     transform: translateY(24px);
@@ -1863,6 +1915,8 @@ footer {
 /* =====================================================
    响应式
    ===================================================== */
+
+/* 平板：768px - 900px */
 @media (max-width: 900px) {
     .couple-wrap {
         grid-template-columns: 1fr;
@@ -1886,6 +1940,7 @@ footer {
     }
 }
 
+/* 手机：<= 768px */
 @media (max-width: 768px) {
     .nav-links {
         position: absolute;
@@ -1919,15 +1974,27 @@ footer {
         padding: 4rem 1.2rem;
     }
 
+    /* 减少移动端 padding 节省屏幕空间 */
+    .section-header {
+        margin-bottom: 2.5rem;
+    }
+
     .add-date-form .form-row {
         grid-template-columns: 1fr;
     }
 
     .gallery-grid {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 0.6rem;
+    }
+
+    /* 移动端照片稍微放大 */
+    .gallery-item {
+        border-radius: var(--radius-sm);
     }
 }
 
+/* 小屏手机：<= 480px */
 @media (max-width: 480px) {
     .hero-title {
         font-size: 2rem;
@@ -1939,5 +2006,73 @@ footer {
 
     .section-title {
         font-size: 1.6rem;
+    }
+
+    /* 更紧凑的照片网格 */
+    .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.5rem;
+    }
+
+    /* 留言板单列更佳 */
+    .message-layout {
+        gap: 1rem;
+    }
+
+    /* 纪念日卡片全宽 */
+    .anniversary {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 超小屏：<= 360px（iPhone SE 等） */
+@media (max-width: 360px) {
+    .hero-days .days-ring {
+        width: 96px;
+        height: 96px;
+    }
+
+    .days-num {
+        font-size: 1.8rem;
+    }
+
+    .gallery-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .couple-center .center-heart-wrap {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+/* 减弱动效模式：尊重用户偏好 */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* 高对比度模式支持 */
+@media (prefers-contrast: high) {
+    :root {
+        --rose: #c04050;
+        --muted: #4a3a3e;
+        --subtle: #8a6068;
+    }
+
+    .gallery-overlay {
+        background: linear-gradient(
+            to top,
+            rgba(10, 26, 42, 0.9) 0%,
+            rgba(10, 26, 42, 0.3) 50%,
+            transparent 100%
+        );
     }
 }

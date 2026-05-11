@@ -1024,7 +1024,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.error?.message || '上传失败');
-        return data.data.url;
+        // imgbb API 返回值说明：
+        //   data.url        → 图片页面链接 (ibb.co/xxx) ❌不可用作img src
+        //   data.display_url → 图片直链（推荐）✅
+        //   data.image.url  → 另一种直链格式
+        return (data.data.image && data.data.image.url) || data.data.display_url || data.data.url;
     }
 
     // 通过 URL 直接添加
