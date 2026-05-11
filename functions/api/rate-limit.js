@@ -17,6 +17,14 @@ const buckets = new Map();
 export function checkRateLimit(ip, opts = {}) {
   const { windowMs = 60_000, maxRequests = 10 } = opts;
   const now = Date.now();
+
+  // 概率性清理过期条目（替代 setInterval，避免全局异步操作）
+  if (Math.random() < 0.01) {
+    for (const [key, entry] of buckets) {
+      if (now > entry.resetAt) buckets.delete(key);
+    }
+  }
+
   const entry = buckets.get(ip);
 
   if (!entry || now > entry.resetAt) {
@@ -34,15 +42,6 @@ export function checkRateLimit(ip, opts = {}) {
   return { ok: true };
 }
 
-/**
- * 清理过期的 bucket 条目（定期调用防止内存泄漏）
- */
+// 注意: 不再使用 setInterval 自动清理（Workers 全局作用域不允许异步操作）
+// 清理由调用方在请求处理中按需触发，或依赖 Map 自然生命周期
 export function cleanup() {
-  const now = Date.now();
-  for (const [ip, entry] of buckets) {
-    if (now > entry.resetAt) buckets.delete(ip);
-  }
-}
-
-// 每 5 分钟自动清理一次
-setInterval(cleanup, 5 * 60_000);
