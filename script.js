@@ -129,7 +129,12 @@ function initDaysCounter() {
 }
 
 // =====================================================
-// 背景音乐
+// 背景音乐 — 自动播放策略
+// 浏览器要求用户交互后才能播放音频，所以：
+// 1. 页面加载时立即尝试（部分浏览器允许）
+// 2. 首次任意点击/触摸时自动播放
+// 3. 弹窗关闭后自动播放（用户已交互过）
+// 4. 标签页切回时恢复播放
 // =====================================================
 function initMusic() {
     const audio = document.getElementById('bgMusic');
@@ -137,30 +142,54 @@ function initMusic() {
     if (!audio || !ctrl) return;
 
     const disc = ctrl.querySelector('.music-disc');
+    let hasInteracted = false;   // 用户是否有过交互
+    let shouldAutoPlay = true;   // 默认自动播放
 
-    disc.addEventListener('click', () => {
+    // 手动点击音乐按钮：切换播放/暂停
+    disc.addEventListener('click', (e) => {
+        e.stopPropagation();
+        hasInteracted = true;
         if (audio.paused) {
             audio.play().then(() => ctrl.classList.add('playing')).catch(() => {});
+            shouldAutoPlay = true;
         } else {
             audio.pause();
             ctrl.classList.remove('playing');
+            shouldAutoPlay = false;
         }
     });
 
     const tryPlay = () => {
-        audio.play().then(() => ctrl.classList.add('playing')).catch(() => {});
+        if (!shouldAutoPlay) return;
+        if (!audio.paused) return;  // 已经在播放就跳过
+        audio.play()
+            .then(() => { ctrl.classList.add('playing'); })
+            .catch(() => {});
     };
 
-    document.addEventListener('click', function autoplay() {
-        tryPlay();
-        document.removeEventListener('click', autoplay);
-    }, { once: true });
-
+    // 策略1：页面加载时立即尝试（Safari/Chrome 有时会允许）
     tryPlay();
 
+    // 策略2：首次任何用户交互（点击/触摸/键盘/滚轮）时触发播放
+    const onFirstInteraction = () => {
+        if (hasInteracted) return;
+        hasInteracted = true;
+        tryPlay();
+    };
+    // 监听多种交互事件，确保弹窗打开的点击也算
+    ['click', 'touchstart', 'keydown', 'wheel', 'scroll'].forEach(evt => {
+        document.addEventListener(evt, onFirstInteraction, { once: true, passive: true });
+    });
+
+    // 策略3：欢迎弹窗关闭后（用户肯定交互过了）确保播放
+    document.addEventListener('closeWelcome', () => {
+        setTimeout(tryPlay, 300);
+    });
+
+    // 策略4：标签页切回时恢复播放
     document.addEventListener('visibilitychange', () => {
-        if (!document.hidden && ctrl.classList.contains('playing')) {
-            audio.play().catch(() => {});
+        if (!document.hidden && shouldAutoPlay) {
+            tryPlay();
         }
     });
 }
@@ -713,6 +742,8 @@ function showWelcomeModal() {
         modal.style.transform = 'translate(-50%, -50%) scale(0.92) translateY(-10px) translateZ(0)';
         overlay.style.transition = 'opacity 0.4s cubic-bezier(0.25,0.46,0.45,0.94)';
         overlay.style.opacity = '0';
+        // 触发自定义事件 → 通知背景音乐可以自动播放了
+        document.dispatchEvent(new Event('closeWelcome'));
         setTimeout(function() {
             modal.style.display = 'none';
             overlay.style.display = 'none';
