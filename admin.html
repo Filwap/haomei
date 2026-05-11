@@ -1053,6 +1053,12 @@ async function handleLogin(username, password) {
         });
         const data = await res.json();
         if (data.success) {
+            // 验证 token 格式（新格式：时间戳.签名）
+            if (!data.token.includes('.')) {
+                errSpan.textContent = '登录失败：服务器返回了旧格式 token，请刷新页面重试（Ctrl+F5）';
+                errEl.classList.add('show');
+                return;
+            }
             authToken = data.token;
             localStorage.setItem('hm_admin_token', authToken);
             showAdminPage();
