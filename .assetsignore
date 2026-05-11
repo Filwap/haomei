@@ -1,0 +1,17 @@
+# 排除版本控制和构建文件
+.git/
+.wrangler/
+.workbuddy/
+
+# 排除文档和说明文件
+*.md
+*.txt
+.gitignore
+ LICENSE
+
+# 排除 node_modules
+node_modules/
+
+# 排除开发工具配置
+.vscode/
+.idea/

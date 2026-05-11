@@ -2,9 +2,10 @@ name = "haomei-api"
 main = "worker.js"
 compatibility_date = "2024-01-01"
 
-# 静态资源目录（用于托管 HTML/JS/CSS/图片等）
+# 静态资源目录（排除 .git 等大文件）
 [assets]
 directory = "."
+
 
 # D1 数据库绑定
 [[d1_databases]]
