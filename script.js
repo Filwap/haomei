@@ -755,7 +755,7 @@ function showWelcomeModal() {
     };
 
     closeBtn.addEventListener('click', close);
-    overlay.addEventListener('click', close);
+    // 移除 overlay 点击关闭，只允许点"进入"按钮
 }
 
 // =====================================================
