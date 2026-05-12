@@ -31,7 +31,12 @@ function initNonCritical() {
     initScrollAnimations();
     initMouseEffects();
     initBackTop();
-    showWelcomeModal();
+    // 移动端跳过欢迎弹窗，直接显示主站
+    if (window.innerWidth <= 768 || 'ontouchstart' in window) {
+        skipWelcomeModal();
+    } else {
+        showWelcomeModal();
+    }
 }
 
 // =====================================================
@@ -894,12 +899,14 @@ function showWelcomeModal() {
     envelope.addEventListener('click', openEnvelope);
     envelope.addEventListener('touchend', function(e) {
         // 移动端：touchend 后延迟触发，避免与 click 冲突
+        // passive: false 确保 preventDefault 生效，防止双击缩放
+        e.preventDefault();
         var now = Date.now();
         if (!envelope._lastTouch || now - envelope._lastTouch > 300) {
             openEnvelope(e);
             envelope._lastTouch = now;
         }
-    });
+    }, { passive: false });
 
     // 点击/触摸"进入"按钮 → 关闭弹窗进入主站
     // ★ 只有在信封已打开（阶段2）时才响应
@@ -911,12 +918,14 @@ function showWelcomeModal() {
     }
     closeBtn.addEventListener('click', enterMainSite);
     closeBtn.addEventListener('touchend', function(e) {
+        // passive: false 确保 preventDefault 生效
+        e.preventDefault();
         var now = Date.now();
         if (!closeBtn._lastTouch || now - closeBtn._lastTouch > 300) {
             enterMainSite(e);
             closeBtn._lastTouch = now;
         }
-    });
+    }, { passive: false });
 
     // 点击遮罩层 → 无效（阻止默认行为）
     overlay.addEventListener('click', function(e) {
@@ -968,6 +977,18 @@ function triggerHeroEntranceAnimation() {
     
     // 2. 触发天数计数器动画
     triggerDaysCounterAnimation();
+}
+
+// 跳过欢迎弹窗（移动端直接显示主站）
+function skipWelcomeModal() {
+    var modal = document.getElementById('welcome-modal');
+    var overlay = document.getElementById('welcome-overlay');
+    if (modal) modal.style.display = 'none';
+    if (overlay) overlay.style.display = 'none';
+    // 直接触发 Hero 入场动画
+    triggerHeroEntranceAnimation();
+    // 触发视频加载
+    loadVideosFromCloud();
 }
 
 // ★ 触发天数计数器动画
