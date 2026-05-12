@@ -919,8 +919,7 @@ ul { list-style: none; }
    ===================================================== */
 .gallery-grid {
     display: grid;
-    /* 固定4列布局，最后一行不满时左对齐 */
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
     gap: 1rem;
     max-width: 1200px;
     margin: 0 auto;
@@ -928,12 +927,15 @@ ul { list-style: none; }
     contain: content;
 }
 
-/* 照片不被放大，统一固定宽高比 */
+.gallery-item--wide {
+    grid-column: span 2;
+}
+
 .gallery-item {
     position: relative;
     border-radius: var(--radius);
     overflow: hidden;
-    aspect-ratio: 1 / 1;  /* 统一正方形 */
+    aspect-ratio: 4/3;
     cursor: pointer;
     background: var(--rose-soft);
     /* 添加阴影增强层次感 */
@@ -941,14 +943,10 @@ ul { list-style: none; }
     transition: box-shadow 0.4s ease, transform 0.4s ease;
 }
 
-/* 确保图片填满容器，不被放大 */
 .gallery-item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* 禁止图片被放大，保持原始分辨率 */
-    max-width: 100%;
-    max-height: 100%;
     transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), filter 0.4s ease;
 }
 
@@ -1616,16 +1614,12 @@ footer {
 /* ── 阶段1: 信封容器 ── */
 .envelope {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -48%);
-    width: 420px;
-    height: 280px;
+    inset: 0;
     cursor: pointer;
     animation: envelopeFloat 3s ease-in-out infinite;
     /* ★ 核心：GPU 加速三件套 */
     will-change: transform;
-    transform: translate(-50%, -48%) translateZ(0);
+    transform: translateZ(0);
     backface-visibility: hidden;
     -webkit-font-smoothing: antialiased;
     /* 添加柔和光晕，暗示"点击这里" */
@@ -2122,7 +2116,7 @@ footer {
     }
 
     .gallery-item--wide {
-        grid-column: span 1;  /* 禁用跨列，固定正方形 */
+        grid-column: span 1;
     }
 
     .quick-nav {
@@ -2174,11 +2168,11 @@ footer {
     }
 
     .gallery-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 0.6rem;
     }
 
-    /* 移动端照片统一正方形 */
+    /* 移动端照片稍微放大 */
     .gallery-item {
         border-radius: var(--radius-sm);
     }
@@ -2200,7 +2194,7 @@ footer {
 
     /* 更紧凑的照片网格 */
     .gallery-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
         gap: 0.5rem;
     }
 
