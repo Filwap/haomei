@@ -98,7 +98,11 @@ function updateActiveNav() {
 // Hero
 // =====================================================
 function initHero() {
+    const hero = document.getElementById('hero');
+    const heroContent = document.querySelector('.hero-content');
+    const heroImg = document.querySelector('.hero-img');
     const heroBtn = document.querySelector('.hero-btn');
+    
     if (heroBtn) {
         heroBtn.addEventListener('click', e => {
             e.preventDefault();
@@ -113,10 +117,39 @@ function initHero() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
     }
+    
+    // 视差滚动效果
+    if (hero && heroImg && heroContent) {
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                requestAnimationFrame(() => {
+                    const scrollY = window.scrollY;
+                    const heroHeight = hero.offsetHeight;
+                    
+                    // 只在 Hero 区域内应用视差
+                    if (scrollY < heroHeight) {
+                        // 背景图向上移动（视差效果）
+                        heroImg.style.transform = `translateY(${scrollY * 0.4}px)`;
+                        // 内容向上移动但速度更慢
+                        heroContent.style.transform = `translateY(${scrollY * 0.2}px)`;
+                        // 内容渐隐
+                        const opacity = 1 - (scrollY / heroHeight) * 1.5;
+                        heroContent.style.opacity = Math.max(0, opacity);
+                    }
+                    
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }, { passive: true });
+    }
 }
 
 // =====================================================
-// 恋爱天数
+// 恋爱天数 - 动态计数动画
+// 注意：动画由 triggerDaysCounterAnimation() 在进入主站后触发
+// 这里只负责分钟级的时间更新
 // =====================================================
 function initDaysCounter() {
     const calcDays = () => {
@@ -124,8 +157,36 @@ function initDaysCounter() {
         document.querySelectorAll('#days-count, #days-count-2, #footer-days')
             .forEach(el => { if (el) el.textContent = diff; });
     };
-    calcDays();
     setInterval(calcDays, 60000);
+}
+
+// 数字滚动动画函数
+function animateCounter(element, target) {
+    const current = parseInt(element.textContent) || 0;
+    
+    // 如果数字相同，不需要动画
+    if (current === target) return;
+    
+    const duration = 3000; // 动画持续时间 3秒
+    const startTime = performance.now();
+    const diff = target - current;
+    
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // 使用 easeOutExpo 缓动函数，让动画更自然
+        const easeProgress = 1 - Math.pow(1 - progress, 4);
+        const value = Math.round(current + diff * easeProgress);
+        
+        element.textContent = value;
+        
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    }
+    
+    requestAnimationFrame(update);
 }
 
 // =====================================================
@@ -526,6 +587,13 @@ function initMessages() {
             showToast('<i class="fas fa-exclamation-circle"></i> 请填写姓名和留言内容');
             return;
         }
+        
+        var formCard = form.closest('.form-card');
+        var submitBtn = form.querySelector('button[type="submit"]');
+        
+        // 添加提交中动画
+        formCard && formCard.classList.add('submitting');
+        submitBtn && (submitBtn.disabled = true);
 
         try {
             const res = await fetch(`${API_BASE}/api/messages`, {
@@ -538,8 +606,13 @@ function initMessages() {
                 var dateStr = new Date().toLocaleDateString('zh-CN');
                 addMessageEl(name, dateStr, content, data.id);
                 form.reset();
+                // 成功动画
+                formCard && formCard.classList.remove('submitting');
+                formCard && formCard.classList.add('submit-success');
+                setTimeout(() => formCard && formCard.classList.remove('submit-success'), 600);
                 showToast('<i class="fas fa-heart"></i> 留言发送成功 ♡');
             } else {
+                formCard && formCard.classList.remove('submitting');
                 showToast('<i class="fas fa-exclamation-circle"></i> 发送失败，请稍后重试');
             }
         } catch (err) {
@@ -548,8 +621,14 @@ function initMessages() {
             addMessageEl(name, dateStr, content);
             saveMessagesLocal();
             form.reset();
+            // 成功动画
+            formCard && formCard.classList.remove('submitting');
+            formCard && formCard.classList.add('submit-success');
+            setTimeout(() => formCard && formCard.classList.remove('submit-success'), 600);
             showToast('<i class="fas fa-heart"></i> 留言发送成功（本地） ♡');
         }
+        
+        submitBtn && (submitBtn.disabled = false);
     });
 }
 
@@ -599,7 +678,7 @@ function addMessageEl(name, date, content, cloudId) {
 
     var avatar = (name || '?').charAt(0).toUpperCase();
     var el = document.createElement('div');
-    el.className = 'message visible';
+    el.className = 'message';
     if (cloudId) el.dataset.cloudId = cloudId;
 
     el.innerHTML = '<div class="message-header">' +
@@ -611,8 +690,14 @@ function addMessageEl(name, date, content, cloudId) {
         '<p>' + escHtml(content) + '</p>';
 
     wall.insertBefore(el, wall.firstChild);
+    
+    // 添加入场动画
     requestAnimationFrame(function() {
-        requestAnimationFrame(function() { el.classList.add('visible'); });
+        requestAnimationFrame(function() {
+            el.classList.add('visible', 'just-added');
+            // 动画结束后移除 just-added 类
+            setTimeout(() => el.classList.remove('just-added'), 500);
+        });
     });
 }
 
@@ -697,46 +782,90 @@ function initBackTop() {
 }
 
 // =====================================================
-// 欢迎弹窗 - 信封动画
+// 欢迎弹窗 - 信封动画（严格点击控制）
+// 阶段1: 只响应信封点击，其他区域无效
+// 阶段2: 只响应"进入"按钮点击，其他区域无效
 // =====================================================
 function showWelcomeModal() {
     var modal = document.getElementById('welcome-modal');
     var overlay = document.getElementById('welcome-overlay');
     var envelope = document.getElementById('envelope');
     var closeBtn = document.getElementById('close-welcome');
+    var letter = document.getElementById('letter');
     if (!modal || !overlay || !envelope || !closeBtn) return;
 
-    // 弹窗入场（GPU 友好的缩放弹性）
+    // 信封是否已打开
+    var isEnvelopeOpen = false;
+    // 是否可以进入主站（阶段2）
+    var canEnter = false;
+
+    // 弹窗入场优化：遮罩层立即出现，信封紧接出现（50ms间隔）
+    // 第一阶段：立即显示遮罩层
+    overlay.style.display = 'block';
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.2s ease-out';
+    
+    // 强制重排，确保样式已应用
+    overlay.offsetHeight;
+    
+    // 遮罩层快速淡入
+    overlay.style.opacity = '1';
+    
+    // 第二阶段：50ms 后显示信封（几乎无感延迟）
     setTimeout(function() {
         modal.style.display = 'block';
-        overlay.style.display = 'block';
         // 初始状态（不可见，略微缩小）
         modal.style.opacity = '0';
         modal.style.transform = 'translate(-50%, -50%) scale(0.88) translateZ(0)';
-        overlay.style.opacity = '0';
+        
         // ★ 双 rAF 确保浏览器在下一帧统一应用 transition
         requestAnimationFrame(function() {
             requestAnimationFrame(function() {
                 modal.style.transition = 'opacity 0.55s cubic-bezier(0.25,0.46,0.45,0.94), transform 0.55s cubic-bezier(0.34,1.56,0.64,1)';
-                overlay.style.transition = 'opacity 0.5s cubic-bezier(0.25,0.46,0.45,0.94)';
                 modal.style.opacity = '1';
                 modal.style.transform = 'translate(-50%, -50%) scale(1) translateZ(0)';
-                overlay.style.opacity = '1';
             });
         });
-    }, 600);
+    }, 50);  // 仅 50ms 间隔，视觉上几乎同时出现
 
     // 点击信封 → 打开（封盖翻转 + 信纸跳出）
-    envelope.addEventListener('click', function openEnvelope() {
-        if (envelope.classList.contains('open')) return;
+    // ★ 只有在信封未打开时才响应
+    envelope.addEventListener('click', function openEnvelope(e) {
+        e.stopPropagation(); // 阻止事件冒泡
+        if (isEnvelopeOpen) return; // 防止重复点击
+        isEnvelopeOpen = true;
         envelope.classList.add('open');
         // 隐藏提示文字
         var hint = envelope.querySelector('.envelope-hint');
         if (hint) hint.style.opacity = '0';
+        // 信封打开后，启用进入按钮
+        canEnter = true;
     });
 
-    // 点击"进入"按钮 → 关闭弹窗
-    const close = function() {
+    // 点击"进入"按钮 → 关闭弹窗进入主站
+    // ★ 只有在信封已打开（阶段2）时才响应
+    closeBtn.addEventListener('click', function enterMainSite(e) {
+        e.stopPropagation(); // 阻止事件冒泡
+        if (!canEnter) return; // 阶段1时点击无效
+        closeWelcomeModal();
+    });
+
+    // 点击遮罩层 → 无效（阻止默认行为）
+    overlay.addEventListener('click', function(e) {
+        e.stopPropagation(); // 阻止事件冒泡
+        // 无论什么阶段，点击遮罩层都无效
+    });
+
+    // 点击弹窗内其他区域（信封、信纸内容区）→ 无效
+    modal.addEventListener('click', function(e) {
+        e.stopPropagation();
+        // 阶段1：信封外的点击无效
+        // 阶段2：按钮外的点击无效
+        // 这里不做任何处理，由具体的子元素处理
+    });
+
+    // 进入主站的关闭动画
+    function closeWelcomeModal() {
         modal.style.transition = 'opacity 0.45s cubic-bezier(0.55, 0, 0, 1), transform 0.45s cubic-bezier(0.55, 0, 0.2, 1)';
         modal.style.opacity = '0';
         modal.style.transform = 'translate(-50%, -50%) scale(0.92) translateY(-10px) translateZ(0)';
@@ -751,11 +880,34 @@ function showWelcomeModal() {
             modal.style.transform = '';
             overlay.style.transition = '';
             loadVideosFromCloud();
+            
+            // ★★★ 弹窗关闭后，触发 Hero 入场动画和天数计数动画 ★★★
+            triggerHeroEntranceAnimation();
         }, 480);
-    };
+    }
+}
 
-    closeBtn.addEventListener('click', close);
-    // 移除 overlay 点击关闭，只允许点"进入"按钮
+// ★ 触发 Hero 入场动画（点击进入按钮后调用）
+function triggerHeroEntranceAnimation() {
+    // 1. 触发 Hero 内容入场动画
+    var heroContent = document.querySelector('.hero-content');
+    if (heroContent) {
+        var elements = heroContent.querySelectorAll('[data-animate]');
+        elements.forEach(function(el) {
+            el.classList.add('visible');
+        });
+    }
+    
+    // 2. 触发天数计数器动画
+    triggerDaysCounterAnimation();
+}
+
+// ★ 触发天数计数器动画
+function triggerDaysCounterAnimation() {
+    var diff = Math.floor((Date.now() - LOVE_START.getTime()) / 86400000);
+    document.querySelectorAll('#days-count, #days-count-2, #footer-days').forEach(function(el) {
+        if (el) animateCounter(el, diff);
+    });
 }
 
 // =====================================================
