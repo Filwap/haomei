@@ -877,10 +877,11 @@ function showWelcomeModal() {
         });
     }, 50);  // 仅 50ms 间隔，视觉上几乎同时出现
 
-    // 点击信封 → 打开（封盖翻转 + 信纸跳出）
+    // 点击/触摸信封 → 打开（封盖翻转 + 信纸跳出）
     // ★ 只有在信封未打开时才响应
-    envelope.addEventListener('click', function openEnvelope(e) {
+    function openEnvelope(e) {
         e.stopPropagation(); // 阻止事件冒泡
+        e.preventDefault();  // 防止移动端双击缩放等默认行为
         if (isEnvelopeOpen) return; // 防止重复点击
         isEnvelopeOpen = true;
         envelope.classList.add('open');
@@ -889,14 +890,32 @@ function showWelcomeModal() {
         if (hint) hint.style.opacity = '0';
         // 信封打开后，启用进入按钮
         canEnter = true;
+    }
+    envelope.addEventListener('click', openEnvelope);
+    envelope.addEventListener('touchend', function(e) {
+        // 移动端：touchend 后延迟触发，避免与 click 冲突
+        var now = Date.now();
+        if (!envelope._lastTouch || now - envelope._lastTouch > 300) {
+            openEnvelope(e);
+            envelope._lastTouch = now;
+        }
     });
 
-    // 点击"进入"按钮 → 关闭弹窗进入主站
+    // 点击/触摸"进入"按钮 → 关闭弹窗进入主站
     // ★ 只有在信封已打开（阶段2）时才响应
-    closeBtn.addEventListener('click', function enterMainSite(e) {
-        e.stopPropagation(); // 阻止事件冒泡
+    function enterMainSite(e) {
+        e.stopPropagation();
+        e.preventDefault();
         if (!canEnter) return; // 阶段1时点击无效
         closeWelcomeModal();
+    }
+    closeBtn.addEventListener('click', enterMainSite);
+    closeBtn.addEventListener('touchend', function(e) {
+        var now = Date.now();
+        if (!closeBtn._lastTouch || now - closeBtn._lastTouch > 300) {
+            enterMainSite(e);
+            closeBtn._lastTouch = now;
+        }
     });
 
     // 点击遮罩层 → 无效（阻止默认行为）

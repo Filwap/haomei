@@ -1639,7 +1639,8 @@ footer {
     left: 50%;
     transform: translate(-50%, -50%);
     width: min(560px, 90vw);
-    height: 440px;
+    height: auto;
+    min-height: 440px;
     z-index: 801;
     perspective: 1200px;
     /* 整个弹窗提升为合成层 */
@@ -1837,7 +1838,7 @@ footer {
 /* ── 阶段2: 展开的信纸 ── */
 .letter {
     position: absolute;
-    inset: -45px;
+    inset: -30px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2227,6 +2228,63 @@ footer {
         font-size: 1.6rem;
     }
 
+    /* ── 移动端信封弹窗适配（核心修复）── */
+    .welcome-modal {
+        width: min(340px, 88vw) !important;
+        height: min(320px, 60vh) !important;
+        z-index: 10001 !important;
+    }
+
+    .modal-overlay {
+        z-index: 10000 !important;
+        /* 确保移动端遮罩层可穿透点击到信封 */
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .env-wrap {
+        width: 280px !important;
+        height: 186px !important;
+        transform: translate(-50%, -46%) !important;
+    }
+
+    .envelope-hint {
+        font-size: 0.7rem !important;
+        bottom: -28px !important;
+    }
+
+    /* 信纸内容区移动端缩小 */
+    .letter-content {
+        padding: 1.8rem 1.4rem 1.5rem !important;
+        border-radius: 16px !important;
+        max-width: 280px !important;
+    }
+
+    .letter h2 {
+        font-size: 1.2rem !important;
+        margin-bottom: 0.6rem !important;
+    }
+
+    .letter-text {
+        font-size: 0.82rem !important;
+        line-height: 1.8 !important;
+        margin-bottom: 1.4rem !important;
+    }
+
+    .letter button {
+        padding: 0.65rem 2rem !important;
+        font-size: 0.86rem !important;
+    }
+
+    .letter-deco-top {
+        font-size: 0.58rem !important;
+        margin-bottom: 0.8rem !important;
+    }
+
+    .letter-deco-bottom {
+        font-size: 0.7rem !important;
+        margin-top: 1rem !important;
+    }
+
     /* 更紧凑的照片网格 */
     .gallery-grid {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -2254,6 +2312,26 @@ footer {
     .days-num {
         font-size: 1.8rem;
     }
+
+    /* ── 超小屏信封进一步缩小 ── */
+    .welcome-modal {
+        width: min(300px, 92vw) !important;
+        height: min(280px, 55vh) !important;
+    }
+
+    .env-wrap {
+        width: 240px !important;
+        height: 160px !important;
+    }
+
+    .letter-content {
+        padding: 1.4rem 1.1rem 1.2rem !important;
+        max-width: 240px !important;
+    }
+
+    .letter h2 { font-size: 1.08rem !important; }
+    .letter-text { font-size: 0.76rem !important; }
+    .letter button { padding: 0.55rem 1.6rem !important; font-size: 0.8rem !important; }
 
     .gallery-grid {
         grid-template-columns: repeat(2, 1fr);
