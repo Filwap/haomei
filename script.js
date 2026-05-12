@@ -894,12 +894,14 @@ function showWelcomeModal() {
     envelope.addEventListener('click', openEnvelope);
     envelope.addEventListener('touchend', function(e) {
         // 移动端：touchend 后延迟触发，避免与 click 冲突
+        // passive: false 确保 preventDefault 生效，防止双击缩放
+        e.preventDefault();
         var now = Date.now();
         if (!envelope._lastTouch || now - envelope._lastTouch > 300) {
             openEnvelope(e);
             envelope._lastTouch = now;
         }
-    });
+    }, { passive: false });
 
     // 点击/触摸"进入"按钮 → 关闭弹窗进入主站
     // ★ 只有在信封已打开（阶段2）时才响应
@@ -911,12 +913,14 @@ function showWelcomeModal() {
     }
     closeBtn.addEventListener('click', enterMainSite);
     closeBtn.addEventListener('touchend', function(e) {
+        // passive: false 确保 preventDefault 生效
+        e.preventDefault();
         var now = Date.now();
         if (!closeBtn._lastTouch || now - closeBtn._lastTouch > 300) {
             enterMainSite(e);
             closeBtn._lastTouch = now;
         }
-    });
+    }, { passive: false });
 
     // 点击遮罩层 → 无效（阻止默认行为）
     overlay.addEventListener('click', function(e) {

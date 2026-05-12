@@ -1661,6 +1661,9 @@ footer {
     /* 添加柔和光晕，暗示"点击这里" */
     filter: drop-shadow(0 0 20px rgba(232, 99, 122, 0.25));
     transition: filter 0.3s ease, transform 0.2s ease;
+    /* 移动端优化 */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* 信封悬浮时的光晕增强 */
@@ -1684,6 +1687,9 @@ footer {
     transform: translate(-50%, -48%);
     width: 420px;
     height: 280px;
+    /* 响应式基础：确保不超过容器 */
+    max-width: 100%;
+    max-height: 100%;
 }
 
 /* ===== 内层粉色信纸（微微露出边缘） ===== */
@@ -1772,12 +1778,12 @@ footer {
     /* 自然缓动曲线：比 spring 更流畅 */
     transition: transform 0.85s cubic-bezier(0.25,0.46,0.45,0.94),
                 opacity 0.35s ease 0.15s;
-    /* ★ 移除 filter:drop-shadow（最昂贵的 per-pixel 滤镜操作）
-     * drop-shadow 在动画时每帧都做高斯模糊计算 → 掉帧主因 */
     z-index: 5;
-    /* ★ GPU 合成层 */
+    /* GPU 合成层 */
     will-change: transform, opacity;
     backface-visibility: hidden;
+    /* 移动端优化：允许触摸穿透 */
+    touch-action: manipulation;
 }
 
 /* 点击提示文字 */
@@ -2233,6 +2239,8 @@ footer {
         width: min(340px, 88vw) !important;
         height: min(320px, 60vh) !important;
         z-index: 10001 !important;
+        /* 移动端禁用3D perspective，避免层叠问题 */
+        perspective: none !important;
     }
 
     .modal-overlay {
@@ -2247,6 +2255,37 @@ footer {
         transform: translate(-50%, -46%) !important;
     }
 
+    /* 移动端信封三角形封盖 - 同步缩小 */
+    .env-flap {
+        border-left-width: 140px !important;
+        border-right-width: 140px !important;
+        /* 确保三角形正确居中 */
+        left: 50% !important;
+        margin-left: 0 !important;
+    }
+
+    /* 移动端内层信纸 - 缩小内边距 */
+    .letter-inside {
+        inset: 4px !important;
+    }
+
+    /* 移动端信封正面爱心 - 缩小 */
+    .env-heart {
+        font-size: 36px !important;
+    }
+
+    /* 移动端信封正面 SVG - 确保比例正确 */
+    .env-v-svg {
+        opacity: 0.35 !important;
+    }
+
+    /* 移动端信封 - 禁用动画减少性能问题 */
+    .envelope {
+        animation: none !important;
+        filter: drop-shadow(0 0 12px rgba(232, 99, 122, 0.2)) !important;
+    }
+
+    /* 移动端信封提示文字 */
     .envelope-hint {
         font-size: 0.7rem !important;
         bottom: -28px !important;
@@ -2273,6 +2312,8 @@ footer {
     .letter button {
         padding: 0.65rem 2rem !important;
         font-size: 0.86rem !important;
+        /* 移动端禁用脉冲动画 */
+        animation: none !important;
     }
 
     .letter-deco-top {
@@ -2322,6 +2363,23 @@ footer {
     .env-wrap {
         width: 240px !important;
         height: 160px !important;
+        transform: translate(-50%, -44%) !important;
+    }
+
+    /* 超小屏信封三角形封盖 */
+    .env-flap {
+        border-left-width: 120px !important;
+        border-right-width: 120px !important;
+    }
+
+    /* 超小屏爱心进一步缩小 */
+    .env-heart {
+        font-size: 28px !important;
+    }
+
+    /* 超小屏内层信纸 */
+    .letter-inside {
+        inset: 3px !important;
     }
 
     .letter-content {
