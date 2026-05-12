@@ -1191,6 +1191,23 @@ ul { list-style: none; }
 
 .video-tags span i { font-size: 0.7rem; }
 
+/* 视频墙空提示 */
+.video-empty {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--subtle);
+}
+.video-empty i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    display: block;
+    opacity: 0.5;
+}
+.video-empty p {
+    font-size: 1rem;
+    color: var(--muted);
+}
+
 /* =====================================================
    留言板
    ===================================================== */

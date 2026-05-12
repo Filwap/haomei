@@ -527,14 +527,22 @@ function setupLightbox() {
 // 视频墙（云端版）
 // =====================================================
 async function loadVideosFromCloud() {
+    const grid = document.querySelector('.video-grid');
+    const emptyTip = document.getElementById('video-empty');
+    if (!grid) return;
+
     try {
         const res = await fetch(`${API_BASE}/api/videos`);
         if (!res.ok) throw new Error('API 不可用');
         const list = await res.json();
-        if (!Array.isArray(list) || list.length === 0) return;
+        if (!Array.isArray(list) || list.length === 0) {
+            // 没有视频数据，显示空提示
+            if (emptyTip) emptyTip.style.display = 'block';
+            return;
+        }
 
-        const grid = document.querySelector('.video-grid');
-        if (!grid) return;
+        // 隐藏空提示
+        if (emptyTip) emptyTip.style.display = 'none';
 
         list.forEach(item => {
             const div = document.createElement('div');
@@ -587,7 +595,8 @@ async function loadVideosFromCloud() {
             requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('visible')));
         });
     } catch (e) {
-        // API 未部署时静默失败
+        // API 未部署或调用失败，显示空提示
+        if (emptyTip) emptyTip.style.display = 'block';
     }
 }
 
