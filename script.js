@@ -532,23 +532,52 @@ async function loadVideosFromCloud() {
         if (!grid) return;
 
         list.forEach(item => {
-            const embedUrl = convertToEmbedUrl(item.url);
             const div = document.createElement('div');
             div.className = 'video-card visible';
-            div.innerHTML = `
-                <div class="video-thumb">
-                    <div class="video-wrapper">
-                        <iframe src="${escHtml(embedUrl)}" frameborder="0" allowfullscreen class="embedded-video"></iframe>
+
+            // 判断视频类型
+            const isDirectVideo = /\.(mp4|webm|ogg|m3u8)(\?|$)/i.test(item.url);
+            const isBilibili = /bilibili\.com/i.test(item.url);
+            const isYoutube = /youtube\.com|youtu\.be/i.test(item.url);
+
+            if (isDirectVideo) {
+                // 直链视频：用 <video> 标签 + 封面点击播放
+                div.innerHTML = `
+                    <div class="video-thumb" onclick="playDirectVideo(this, '${escHtml(item.url)}')">
+                        <div class="video-wrapper video-direct">
+                            <video preload="metadata" playsinline muted>
+                                <source src="${escHtml(item.url)}" type="video/mp4">
+                            </video>
+                            <div class="video-play-overlay"><i class="fas fa-play-circle"></i></div>
+                        </div>
                     </div>
-                </div>
-                <div class="video-meta">
-                    <h3>${escHtml(item.title)}</h3>
-                    <p>${escHtml(item.description || '')}</p>
-                    <div class="video-tags">
-                        <span><i class="fas fa-play"></i> 视频</span>
-                        <span><i class="fas fa-heart"></i> 回忆</span>
+                    <div class="video-meta">
+                        <h3>${escHtml(item.title)}</h3>
+                        <p>${escHtml(item.description || '')}</p>
+                        <div class="video-tags">
+                            <span><i class="fas fa-play"></i> 视频</span>
+                            <span><i class="fas fa-heart"></i> 回忆</span>
+                        </div>
+                    </div>`;
+            } else {
+                // B站/YouTube 等：用 iframe 嵌入
+                const embedUrl = convertToEmbedUrl(item.url);
+                div.innerHTML = `
+                    <div class="video-thumb">
+                        <div class="video-wrapper">
+                            <iframe src="${escHtml(embedUrl)}" frameborder="0" allowfullscreen class="embedded-video"></iframe>
+                        </div>
                     </div>
-                </div>`;
+                    <div class="video-meta">
+                        <h3>${escHtml(item.title)}</h3>
+                        <p>${escHtml(item.description || '')}</p>
+                        <div class="video-tags">
+                            <span><i class="fas fa-play"></i> 视频</span>
+                            <span><i class="fas fa-heart"></i> 回忆</span>
+                        </div>
+                    </div>`;
+            }
+
             grid.appendChild(div);
             requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('visible')));
         });
@@ -566,8 +595,28 @@ function convertToEmbedUrl(url) {
     // YouTube
     const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
     if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
-    // 其他直接使用原链接
+    // 其他直接使用原链接（用于 <video> 标签）
     return url;
+}
+
+// 直链视频点击播放（COS 等 .mp4/.webm 文件）
+function playDirectVideo(thumbEl, videoUrl) {
+    const wrapper = thumbEl.querySelector('.video-wrapper');
+    const video = wrapper.querySelector('video');
+    const overlay = wrapper.querySelector('.video-play-overlay');
+
+    if (!video || !overlay) return;
+
+    // 显示播放控件，移除静音，开始播放
+    video.controls = true;
+    video.muted = false;
+    video.play().catch(() => { /* 用户可能需要交互才能播放 */ });
+
+    // 隐藏播放按钮覆盖层
+    overlay.style.display = 'none';
+
+    // 添加播放中样式
+    wrapper.classList.add('playing');
 }
 
 // =====================================================
