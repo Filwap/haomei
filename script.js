@@ -4,13 +4,8 @@
    性能优化: 懒加载、请求合并、事件委托
    ===================================================== */
 
-// ── 配置：API 使用绝对路径（兼容移动端/微信浏览器） ───────────────
-const API_BASE = (() => {
-    // 本地开发环境
-    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return '';
-    // 生产环境：使用当前协议+域名，确保微信/移动端兼容
-    return location.origin;
-})();
+// ── 配置：API 使用相对路径（Workers） ───────────────────────
+const API_BASE = '';
 
 // ── 全局常量 ───────────────────────────────────────────
 const LOVE_START = new Date('2025-04-17');
@@ -531,34 +526,15 @@ function setupLightbox() {
 // =====================================================
 // 视频墙（云端版）
 // =====================================================
-async function loadVideosFromCloud(retryCount = 0) {
+async function loadVideosFromCloud() {
     const grid = document.querySelector('.video-grid');
     const emptyTip = document.getElementById('video-empty');
     if (!grid) return;
 
-    // 如果已经有视频卡片，不再重复加载
-    if (grid.children.length > 0) return;
-
-    // 显示加载中提示
-    grid.innerHTML = '<div class="video-loading" style="text-align:center;padding:2rem;color:var(--muted)"><i class="fas fa-spinner fa-spin" style="font-size:2rem;margin-bottom:1rem;display:block"></i><p>正在加载视频...</p></div>';
-
     try {
-        const apiUrl = `${API_BASE}/api/videos`;
-        console.log('[Video] 正在加载视频列表:', apiUrl);
-
-        const res = await fetch(apiUrl, {
-            // 添加缓存控制，避免微信浏览器缓存空响应
-            headers: { 'Cache-Control': 'no-cache' }
-        });
-
-        if (!res.ok) throw new Error(`API 不可用: ${res.status}`);
-
+        const res = await fetch(`${API_BASE}/api/videos`);
+        if (!res.ok) throw new Error('API 不可用');
         const list = await res.json();
-        console.log('[Video] 获取到视频数据:', list);
-
-        // 清除加载提示
-        grid.innerHTML = '';
-
         if (!Array.isArray(list) || list.length === 0) {
             // 没有视频数据，显示空提示
             if (emptyTip) emptyTip.style.display = 'block';
@@ -570,7 +546,7 @@ async function loadVideosFromCloud(retryCount = 0) {
 
         list.forEach(item => {
             const div = document.createElement('div');
-            div.className = 'video-card';
+            div.className = 'video-card visible';
 
             // 判断视频类型
             const isDirectVideo = /\.(mp4|webm|ogg|m3u8)(\?|$)/i.test(item.url);
@@ -579,13 +555,11 @@ async function loadVideosFromCloud(retryCount = 0) {
 
             if (isDirectVideo) {
                 // 直链视频：用 <video> 标签 + 封面点击播放
-                // 对 URL 进行编码，避免中文路径问题
-                const encodedUrl = encodeURI(item.url);
                 div.innerHTML = `
-                    <div class="video-thumb" onclick="playDirectVideo(this, '${escHtml(encodedUrl)}')">
+                    <div class="video-thumb" onclick="playDirectVideo(this, '${escHtml(item.url)}')">
                         <div class="video-wrapper video-direct">
                             <video preload="metadata" playsinline muted>
-                                <source src="${escHtml(encodedUrl)}" type="video/mp4">
+                                <source src="${escHtml(item.url)}" type="video/mp4">
                             </video>
                             <div class="video-play-overlay"><i class="fas fa-play-circle"></i></div>
                         </div>
@@ -618,17 +592,9 @@ async function loadVideosFromCloud(retryCount = 0) {
             }
 
             grid.appendChild(div);
-            // 延迟添加 visible 类以触发动画
             requestAnimationFrame(() => requestAnimationFrame(() => div.classList.add('visible')));
         });
     } catch (e) {
-        console.error('[Video] 加载失败:', e.message);
-        // 最多重试2次
-        if (retryCount < 2) {
-            console.log(`[Video] 第 ${retryCount + 1} 次重试...`);
-            setTimeout(() => loadVideosFromCloud(retryCount + 1), 1000);
-            return;
-        }
         // API 未部署或调用失败，显示空提示
         if (emptyTip) emptyTip.style.display = 'block';
     }
