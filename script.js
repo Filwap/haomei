@@ -539,6 +539,9 @@ async function loadVideosFromCloud(retryCount = 0) {
     // 如果已经有视频卡片，不再重复加载
     if (grid.children.length > 0) return;
 
+    // 显示加载中提示
+    grid.innerHTML = '<div class="video-loading" style="text-align:center;padding:2rem;color:var(--muted)"><i class="fas fa-spinner fa-spin" style="font-size:2rem;margin-bottom:1rem;display:block"></i><p>正在加载视频...</p></div>';
+
     try {
         const apiUrl = `${API_BASE}/api/videos`;
         console.log('[Video] 正在加载视频列表:', apiUrl);
@@ -552,6 +555,9 @@ async function loadVideosFromCloud(retryCount = 0) {
 
         const list = await res.json();
         console.log('[Video] 获取到视频数据:', list);
+
+        // 清除加载提示
+        grid.innerHTML = '';
 
         if (!Array.isArray(list) || list.length === 0) {
             // 没有视频数据，显示空提示
@@ -573,11 +579,13 @@ async function loadVideosFromCloud(retryCount = 0) {
 
             if (isDirectVideo) {
                 // 直链视频：用 <video> 标签 + 封面点击播放
+                // 对 URL 进行编码，避免中文路径问题
+                const encodedUrl = encodeURI(item.url);
                 div.innerHTML = `
-                    <div class="video-thumb" onclick="playDirectVideo(this, '${escHtml(item.url)}')">
+                    <div class="video-thumb" onclick="playDirectVideo(this, '${escHtml(encodedUrl)}')">
                         <div class="video-wrapper video-direct">
                             <video preload="metadata" playsinline muted>
-                                <source src="${escHtml(item.url)}" type="video/mp4">
+                                <source src="${escHtml(encodedUrl)}" type="video/mp4">
                             </video>
                             <div class="video-play-overlay"><i class="fas fa-play-circle"></i></div>
                         </div>
